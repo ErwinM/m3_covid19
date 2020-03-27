@@ -19,30 +19,43 @@ from covid19_processing import *
 data = Covid19Processing()
 data.process(rows=20, debug=False)
 
-#fetch
-countries_to_plot = ["China", "Japan", "South Korea", "United States", "Italy", "Iran", "Germany",
-                     "France", "Spain", "Netherlands", "United Kingdom", "World", "Belgium"]
 
-confirmed_cases = data.dataframes['confirmed'].groupby(by="Country/Region").sum().reset_index()
+#fetch
+countries_to_plot = ["Netherlands", "Italy", "Germany", "France", "Spain",
+                     "Belgium", "Austria", "United Kingdom"
+                     ]
+
+confirmed_cases = data.dataframes['confirmed_by_country']
+
 
 fig = go.Figure()
 
 for country in countries_to_plot:    
     try:
-        y_country = confirmed_cases[confirmed_cases['Country/Region'] == country].iloc[:,4:].transpose()
-        x_country = y_country.index.tolist()
+        population = data.country_metadata[country]["population"]
+        y_country = confirmed_cases[confirmed_cases.index == country].iloc[:,4:].transpose()
+#        x_country = y_country.index.tolist()
         y_country.columns = [country]
-        y_country = y_country[country].values.tolist()
-        fig.add_trace(go.Scatter(x=x_country, y=y_country, name = country))
+        y_country = y_country[y_country[country]/population*100000 > 1]
+        y_country = np.array(y_country[country].values.tolist())/population*100000
+        if country == "Netherlands" :
+            fig.add_trace(go.Scatter(y=y_country, name = country, line = dict(width = 6)))
+        else:
+            fig.add_trace(go.Scatter(y=y_country, name = country))
     except:
         continue
         
 fig.update_layout(
-    plot_bgcolor='white'
+    plot_bgcolor='white',
+    xaxis_title="Days",
+    yaxis_title="Cases",
+    yaxis_type = "log"
 )
 
 fig.update_xaxes(showgrid=True, gridwidth=1, gridcolor='LightGrey')
 fig.update_yaxes(showgrid=True, gridwidth=1, gridcolor='LightGrey')
+
+
 
 
 # App definition and authorisation
@@ -57,25 +70,23 @@ app.layout = html.Div(
                 dbc.Container(
                         children=[
                     dbc.NavbarSimple(
-                            brand = "COVID dashboard",
+                            brand = "M3 Consultancy | COVID dashboard",
                             brand_href="#",
-                            color="primary",
+                            color="#E21F35",
                             dark=True,
                             fluid = True)
                     ]),
                 dbc.Container([
-                        dbc.Jumbotron([
-                                html.H1("Landing page for dashboard"),
-                                html.P("Initial dashboard with some text")])
-                    ]),
-                dbc.Container(
-                        children=[
-                                dcc.Graph(
-                                        id = 'confirmed',
-                                        figure = fig
-                                        )
-                                ])
-])
+                        dbc.Card(
+                                dbc.CardBody([
+                                        html.H3("So far, development of confirmed cases in The Netherlands has been similar to other European countries"),
+                                        html.P("Number of confirmed cases per 100.000 starting on first day with more than 1 case per 100.000"),
+                                dbc.Container(
+                                        children=[
+                                                dcc.Graph(
+                                                        id = 'confirmed',
+                                                        figure = fig
+                                                        )])]))])])
 
 if __name__ == '__main__':
     app.run_server(debug = True)
