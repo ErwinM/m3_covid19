@@ -8,7 +8,8 @@ import scipy.stats
 from io import StringIO
 import datetime
 import geonamescache
-
+import plotly.graph_objs as go
+import math
 
 class Covid19Processing:
     def __init__(self):
@@ -43,6 +44,8 @@ class Covid19Processing:
             url = base_url + data_urls[metric]  # Combine URL parts
             r = requests.get(url)  # Retrieve from URL
             self.dataframes[metric] = pd.read_csv(StringIO(r.text), sep=",")  # Convert into Pandas dataframe
+            
+        self.ICU = pd.read_csv('ICU_beds.csv', sep = ";")
 
 
     def process(self, rows=20, debug=False):
@@ -149,19 +152,98 @@ class Covid19Processing:
     def get_new_cases_details(self, country, avg_n=5, median_n=3):
         confirmed = self.get_country_data("confirmed").loc[country]
         deaths = self.get_country_data("deaths").loc[country]
-        df = pd.DataFrame(confirmed)
-        df = df.rename(columns={country: "confirmed_cases"})
-        df.loc[:, "new_cases"] = np.maximum(0, confirmed.diff())
+        df = pd.DataFrame(deaths)
+        df = df.rename(columns={country: "confirmed_deaths"})
         df.loc[:, "new_deaths"] = np.maximum(0, deaths.diff())
-        df = df.loc[df.new_cases > 1, :]
-        df.loc[:, "growth_factor"] = df.new_cases.diff() / df.new_cases.shift(1) + 1
+        df = df.loc[df.new_deaths > 1, :]
+        df.loc[:, "growth_factor"] = df.new_deaths.diff() / df.new_deaths.shift(1) + 1
         df[~np.isfinite(df)] = np.nan
-        df.loc[:, "filtered_new_cases"] = \
-            scipy.ndimage.convolve(df.new_cases, np.ones(avg_n) / avg_n, origin=-avg_n // 2 + 1)
+        df.loc[:, "filtered_new_deaths"] = \
+            scipy.ndimage.convolve(df.new_deaths, np.ones(avg_n) / avg_n, origin=-avg_n // 2 + 1)
         df.loc[:, "filtered_growth_factor"] = \
-            df.filtered_new_cases.diff() / df.filtered_new_cases.shift(1) + 1
+            df.filtered_new_deaths.diff() / df.filtered_new_deaths.shift(1) + 1
         df.filtered_growth_factor = scipy.ndimage.median_filter(df.filtered_growth_factor, median_n, mode="nearest")
         return df
+    
+    def create_growth_figures(self, metric, countries_to_plot):
+        if metric == "deaths":
+            df = self.dataframes['deaths_by_country']
+        else:
+            df = self.dataframes['confirmed_by_country']
+        fig = go.Figure()
+        for country in countries_to_plot:    
+            try:
+                population = self.country_metadata[country]["population"]
+                y_country = df[df.index == country].iloc[:,4:].transpose()
+                y_country.columns = [country]
+                if metric == "deaths":
+                    y_country = y_country[y_country[country]/population*1000000 > 1]
+                else:
+                    y_country = y_country[y_country[country]/population*100000 > 1]
+                y_country = np.array(y_country[country].values.tolist())/population*100000
+                if country == "Netherlands" :
+                    fig.add_trace(go.Scatter(y=y_country, name = country, line = dict(width = 6)))
+                else:
+                    fig.add_trace(go.Scatter(y=y_country, name = country))
+            except:
+                continue                    
+        fig.update_layout(
+            plot_bgcolor='white',
+            xaxis_title="Days",
+            yaxis_type = "log"
+        )            
+        fig.update_xaxes(showgrid=True, gridwidth=1, gridcolor='LightGrey')
+        fig.update_yaxes(showgrid=True, gridwidth=1, gridcolor='LightGrey')
+        return fig
 
+
+    def create_factor_figure(self, countries_to_plot):
+        fig = go.Figure()
+        for country in countries_to_plot:
+            try:
+                df = self.get_new_cases_details(country)
+                population = self.country_metadata[country]["population"]
+                df = df[df["confirmed_deaths"]/population*1000000>1]
+                y_country = df["filtered_growth_factor"].values-1
+                if country == "Netherlands":
+                    fig.add_trace(go.Scatter(y=y_country, name = country, line = dict(width = 6)))
+                else:
+                    fig.add_trace(go.Scatter(y=y_country, name = country))
+            except:
+                continue
+        fig.update_layout(
+            plot_bgcolor='white',
+            xaxis_title="Days",
+        )
+        fig.update_xaxes(showgrid=True, gridwidth=1, gridcolor='LightGrey')
+        fig.update_yaxes(showgrid=True, gridwidth=1, gridcolor='LightGrey', tickformat= ',.0%')
+        return fig
+
+
+# ICU_fig = go.Figure()
+# ICU_fig.update_layout(barmode='group')
+# x1 = []
+# y1 = []
+# y2 = []
+# for country in countries_to_plot:
+#     try:
+#         population = data.country_metadata[country]["population"]
+#         ICU_cap = ICU[ICU["Country"] == country]["number"].values[0]
+#         # confirmed = data.dataframes['confirmed_by_country']
+#         # confirmed = confirmed[confirmed.index == country].iloc[:,-14:].values[0][-1]-confirmed[confirmed.index == country].iloc[:,-14:].values[0][0]
+#         x1.append(country)
+#         y1.append(ICU_cap)
+#     except:
+#         continue
+
+# ICU_fig.add_trace(go.Bar(y=y1, x = x1 , name = "ICU capacity"))
+# ICU_fig.add_trace(go.Bar(y=y2, x = x1, name = "Confirmed"))
+# ICU_fig.update_layout(
+#             plot_bgcolor='white',
+#             xaxis_title="Days",
+#             yaxis_title="Cases",
+#         )            
+# ICU_fig.update_xaxes(showgrid=True, gridwidth=1, gridcolor='LightGrey')
+# ICU_fig.update_yaxes(showgrid=True, gridwidth=1, gridcolor='LightGrey')
  
  
