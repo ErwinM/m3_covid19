@@ -12,7 +12,7 @@ import sys
 is_colab = 'google.colab' in sys.modules
 from covid19_util import *
 from covid19_processing import *
-
+from dash.dependencies import Input, Output
 
 
 # data processing
@@ -34,22 +34,26 @@ fig_growth = data.create_factor_figure(countries_to_plot)
 app = dash.Dash(__name__,
                 external_stylesheets = [dbc.themes.BOOTSTRAP])
 server = app.server
+app.config['suppress_callback_exceptions'] = True
 
-
-## html
-app.layout = html.Div(
-        children=[
-                dbc.Container(
+# Navbar
+navbar = dbc.Container(
                         children=[
                     dbc.NavbarSimple(
-                            brand = "M3 Consultancy | COVID dashboard (test version 28-03-2020)",
-                            brand_href="#",
+                            children = [
+                                dbc.NavLink("Current situation", href="/page-1", id = "page-1-link"),
+                                dbc.NavLink("Outlook", href="/page-2", id = "page-2-link")],
+                            brand = "M3 Consultancy | COVID dashboard",
+                            brand_href="/page-1",
                             color="#E21F35",
                             dark=True,
                             # fluid = True,
                             fixed = "top")
-                    ]),
-                dbc.Container([
+                    ])
+
+#page 1 with current situation
+page_1_layout = html.Div([navbar, 
+                 dbc.Container([
                         dbc.Card(
                                 dbc.CardBody([
                                         html.H3("28/03/2020: The number of confirmed cases in The Netherlands is below other European countries, but likely impacted by limited testing"),
@@ -81,6 +85,67 @@ app.layout = html.Div(
                                                         figure = fig_growth
                                                         )])]))
                         ], style = dict(marginTop= "50px"))])
+
+# page two with forecast
+page_2_layout = html.Div([navbar,
+                 dbc.Container([
+                        dbc.Card(
+                                dbc.CardBody([
+                                        html.H3("Number of infections strongly impacted by basic reproduction number"),
+                                        html.P("Number of infectious and exposed people starting with 50 infections"),
+                                dbc.Container(
+                                        children=[
+                                            dcc.Graph(
+                                                        id = 'outlook_figure',
+                                                        ),
+                                            html.P("Change value of the basic reproduction number (R_0) to see impact on number of infections:"),
+                                            html.Div([
+                                            dcc.Slider(id = 'r_slider',
+                                                           min = 0,
+                                                           max = 4,
+                                                           step = 0.1,
+                                                           value = 2.2,
+                                                           marks = {
+                                                               0: '0',
+                                                               1: '1',
+                                                               2: '2',
+                                                               3: '3',
+                                                               4: '4'})], style = {'width': '70%'})])]))]
+                     , style = dict(marginTop= "50px"))])
+
+## html
+app.layout = html.Div(
+    [dcc.Location(id = 'url', refresh = False),
+     html.Div(id = 'page-content')])
+
+@app.callback(
+    Output('outlook_figure', 'figure'),
+    [Input('r_slider', 'value')])
+def update_figure(R):
+    solution = solve_SEIR(R, 2.9 , 5.2 ,  14 ,7000000)
+    outlook_fig = go.Figure()
+    y_outlook = solution[:,1]
+    y_outlook2 = solution[:,2]
+    outlook_fig.add_trace(go.Scatter(y=y_outlook, name = "exposed"))
+    outlook_fig.add_trace(go.Scatter(y=y_outlook2, name = "infectious"))
+    outlook_fig.update_layout(
+        plot_bgcolor='white',
+        xaxis_title="Days",
+        )
+    outlook_fig.update_xaxes(showgrid=True, gridwidth=1, gridcolor='LightGrey')
+    outlook_fig.update_yaxes(showgrid=True, gridwidth=1, gridcolor='LightGrey')
+    return outlook_fig
+
+
+@app.callback(Output('page-content', 'children'), [Input('url', 'pathname')])
+def display_page(pathname):
+    if pathname == '/page-1':
+        return page_1_layout
+    elif pathname == '/page-2':
+        return page_2_layout
+    else:
+        return page_1_layout
+
 
 if __name__ == '__main__':
     app.run_server(debug = False)

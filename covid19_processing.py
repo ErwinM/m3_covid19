@@ -10,6 +10,10 @@ import datetime
 import geonamescache
 import plotly.graph_objs as go
 import math
+import numpy as np
+from scipy.integrate import odeint
+
+
 
 class Covid19Processing:
     def __init__(self):
@@ -220,30 +224,5 @@ class Covid19Processing:
         return fig
 
 
-# ICU_fig = go.Figure()
-# ICU_fig.update_layout(barmode='group')
-# x1 = []
-# y1 = []
-# y2 = []
-# for country in countries_to_plot:
-#     try:
-#         population = data.country_metadata[country]["population"]
-#         ICU_cap = ICU[ICU["Country"] == country]["number"].values[0]
-#         # confirmed = data.dataframes['confirmed_by_country']
-#         # confirmed = confirmed[confirmed.index == country].iloc[:,-14:].values[0][-1]-confirmed[confirmed.index == country].iloc[:,-14:].values[0][0]
-#         x1.append(country)
-#         y1.append(ICU_cap)
-#     except:
-#         continue
-
-# ICU_fig.add_trace(go.Bar(y=y1, x = x1 , name = "ICU capacity"))
-# ICU_fig.add_trace(go.Bar(y=y2, x = x1, name = "Confirmed"))
-# ICU_fig.update_layout(
-#             plot_bgcolor='white',
-#             xaxis_title="Days",
-#             yaxis_title="Cases",
-#         )            
-# ICU_fig.update_xaxes(showgrid=True, gridwidth=1, gridcolor='LightGrey')
-# ICU_fig.update_yaxes(showgrid=True, gridwidth=1, gridcolor='LightGrey')
- 
+        
  
