@@ -24,7 +24,7 @@ N = 7000000 # size of population
 # calculated for clarity
 alfa = 1 / tINC
 beta = R0 /tINF
-gamma = 1 / rAVG
+gamma = 1 / tINF
 
 
 
@@ -39,21 +39,25 @@ def dUdt(U, t):
     return [dsdt, dedt, didt]
 
 # Create time domain
-t_span = np.linspace(0, 102)
+t_span = np.linspace(0, 200, 100, endpoint=False)
 
 # Initial condition
 e0 = 0 # exposures
-i0 = 40 # infections
+i0 = 1 # infections
 r0 = 0 # recoveries
 s0 = N - i0 / N # susceptible population
 
 Uzero = [s0, e0, i0]
-
 solution = odeint(dUdt, Uzero, t_span)
 
+# insert t_span into solution to prevent total confusion
+t = np.reshape(t_span, (100,1))
+inspect_solution = np.append(solution, t, axis=1 )
+
+
 # plot
-plt.plot(t_span, solution[:, 0], label='Susceptible');
-plt.plot(t_span, solution[:, 1], label='Exosed');
+#plt.plot(t_span, solution[:, 0], label='masse');
+plt.plot(t_span, solution[:, 1], label='Exposed');
 plt.plot(t_span, solution[:, 2], label='Infectious');
 plt.legend();
 plt.xlabel('time'); 
