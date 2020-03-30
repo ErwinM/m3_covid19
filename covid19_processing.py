@@ -177,25 +177,38 @@ class Covid19Processing:
         fig = go.Figure()
         for country in countries_to_plot:    
             try:
-                population = self.country_metadata[country]["population"]
+                # population = self.country_metadata[country]["population"]
                 y_country = df[df.index == country].iloc[:,4:].transpose()
                 y_country.columns = [country]
                 if metric == "deaths":
-                    y_country = y_country[y_country[country]/population*1000000 > 1]
+                    y_country = y_country[y_country[country] > 1]
                 else:
-                    y_country = y_country[y_country[country]/population*100000 > 1]
-                y_country = np.array(y_country[country].values.tolist())/population*100000
+                    y_country = y_country[y_country[country] > 1]
+                y_country = np.array(y_country[country].values.tolist())
                 if country == "Netherlands" :
                     fig.add_trace(go.Scatter(y=y_country, name = country, line = dict(width = 6)))
                 else:
                     fig.add_trace(go.Scatter(y=y_country, name = country))
             except:
-                continue                    
+                continue
+        double = [1]
+        for x in range(1,15): double.append(double[x-1]*(2))    
+        double2 = [1]
+        for x in range(1,30): double2.append(double2[x-1]*np.sqrt(2))
+        double4 = [1]
+        for x in range(1,45): double4.append(double4[x-1]*np.sqrt(np.sqrt(2)))
+        fig.add_trace(go.Scatter(y=double, name = "Doubling every day",
+                                 line = dict(color='Lightgrey', width=2, dash='dot')))          
+        fig.add_trace(go.Scatter(y=double2, name = "Doubling every 2 days",
+                                 line = dict(color='Darkgrey', width=2, dash='dot')))                                     
+        fig.add_trace(go.Scatter(y=double4, name = "Doubling every 4 days",
+                                 line = dict(color='Grey', width=2, dash='dot')))     
+        fig.update_traces(mode='lines')
         fig.update_layout(
             plot_bgcolor='white',
             xaxis_title="Days",
-            yaxis_type = "log"
-        )            
+            yaxis_type = "log",
+            title = "Figure 1: total amount of deaths since the day of the first death")           
         fig.update_xaxes(showgrid=True, gridwidth=1, gridcolor='LightGrey')
         fig.update_yaxes(showgrid=True, gridwidth=1, gridcolor='LightGrey')
         return fig
@@ -206,9 +219,10 @@ class Covid19Processing:
         for country in countries_to_plot:
             try:
                 df = self.get_new_cases_details(country)
-                population = self.country_metadata[country]["population"]
-                df = df[df["confirmed_deaths"]/population*1000000>1]
+                # population = self.country_metadata[country]["population"]
+                df = df[df["confirmed_deaths"]>1]
                 y_country = df["filtered_growth_factor"].values-1
+                y_country = y_country[4:]
                 if country == "Netherlands":
                     fig.add_trace(go.Scatter(y=y_country, name = country, line = dict(width = 6)))
                 else:
@@ -218,9 +232,11 @@ class Covid19Processing:
         fig.update_layout(
             plot_bgcolor='white',
             xaxis_title="Days",
+            title = "Figure 2: average growth (5 days) of new number of deaths"
         )
         fig.update_xaxes(showgrid=True, gridwidth=1, gridcolor='LightGrey')
         fig.update_yaxes(showgrid=True, gridwidth=1, gridcolor='LightGrey', tickformat= ',.0%')
+        fig.update_traces(mode='lines')
         return fig
 
 

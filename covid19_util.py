@@ -207,33 +207,7 @@ def half_gauss(n=6, sigma=1, ascending=True):
         g = g[::-1]
     return [x/s for x in g]
 
-def solve_SEIR(R0 = 2.2, tINF = 2.9 , tINC = 5.2 , rAVG = 14 , N = 17000000):
-    # calculated for clarity
-    alfa = 1 / tINC
-    beta = R0 / tINF
-    gamma = 1 / tINF
-            
-    def dUdt(U, t):
-        s, e, i = U
-        dsdt = -beta * i / N * s
-        dedt = beta * i/ N * s - alfa * e
-        didt = alfa * e - gamma * i
-        return [dsdt, dedt, didt]
-    
-    # Create time domain
-    t_span = np.linspace(0, 200, 200, endpoint=False)
-    
-    # Initial condition
-    e0 = 0 # exposures
-    i0 = 50 # infections
-    r0 = 0 # recoveries
-    s0 = N - i0 / N # susceptible population
-    
-    Uzero = [s0, e0, i0]
-    solution = odeint(dUdt, Uzero, t_span)
-    
-    # insert t_span into solution to prevent total confusion
-    t = np.reshape(t_span, (200,1))
-    inspect_solution = np.append(solution, t, axis=1 )
-    return solution
+
+
+
         
