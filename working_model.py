@@ -51,8 +51,8 @@ def SEIR_solution(intervention = [(100,1), (300, 0.2)],e0 = 0):
     t_hosp_net = t_hosp - t_inf
     t_ic_net = t_ic - t_inc
     
-    p_hosp = p_hosp_0 - (3/4) * p_fatal
-    p_ic = p_ic_0 - (1/4) * p_fatal
+    p_hosp = p_hosp_0 - (1-p_fatal_ic) * p_fatal
+    p_ic = p_ic_0 - p_fatal_ic * p_fatal
     assert(p_mild+p_hosp+p_ic+p_fatal == 1)
     
 

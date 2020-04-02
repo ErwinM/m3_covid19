@@ -18,8 +18,8 @@ data = Covid19Processing()
 data.process(rows=20, debug=False)
 
 # fit effective R for question 2, fix factors for speedup
-# factors = mf.fit_REIS(30)
-factors = [1.73919508, 0.4360855]
+factors = mf.fit_REIS(30)
+# factors = [1.73919508, 0.4360855]
 hospital = pd.read_csv("hospitalizations.csv", sep = ";")
 
 #create figures for question 1
@@ -34,8 +34,8 @@ Rinitial = 1.73919508 * 2.2
 Ractual = factors[1] * 2.2
 Rtarget = 1
 barnames = ["Estimated R before measures", "Latest estimate of R after measures", "Target to stay below IC capacity"]
-effective_R = go.Bar(y= [Rinitial, Ractual, Rtarget], x = barnames, name = "Reproduction rate")
-repression_data = go.Bar(y= [0, Rinitial- Ractual, Rinitial-Rtarget], x = barnames, name = "Repression")
+effective_R = go.Bar(y= [Rinitial, Ractual, Rtarget], x = barnames, name = "Reproduction rate (R)")
+repression_data = go.Bar(y= [0, Rinitial- Ractual, Rinitial-Rtarget], x = barnames, name = "Surpression of R from lockdown", marker_color = "LightGrey")
 fig_bar = go.Figure(data = [effective_R, repression_data])
 fig_bar.update_layout(barmode='stack')
 fig_bar.update_layout(
@@ -91,9 +91,10 @@ page_1_layout = html.Div([navbar,
                                                
                                         html.P("""
                                                To see if measures to stop the growth are succesfully, we could look at a few figures:
-                                               the number of confirmed cases, hospitalizations and death toll. We consider the death toll to be the most
-                                               reliable figure by which we can compare the situation in The Netherlands with other European countries as
-                                               well.
+                                               the number of confirmed cases, hospitalizations and death toll. Measurement of all these figures
+                                               is distorted by the amount of tests executed, even for the number of deaths. However, we can
+                                               compare the trajectory of the latter between various countries to get an idea of whether or not the
+                                               virus is still spreading exponentially or not.                                               
                                                """),
 
                                         dbc.Container(
@@ -124,13 +125,38 @@ page_1_layout = html.Div([navbar,
                             dbc.Card([
                                 dbc.CardBody([
                                         html.H3("Question 2: Is there going to be enough IC capacity for everyone in need?"),
-                                        html.P("Figure 3 shows the preliminary results of our SEIR model fitted to NL data"),
+                                        html.P("""
+                                               This is not an easy question to answer, as it involves forecasting the amount of
+                                               people that need ICU care. ICU capacity in the Netherlands constrainted to ultimately
+                                               2400 beds, of which 500 beds are needed for regular patients.   
+                                               """),
+                                       html.P("""    
+                                               
+                                               The RIVM provides us with new forecasts on a weekly basis, so to keep ourselves updated
+                                               in the meantime we have created a simplified forecasting model similar to the models 
+                                               used by the RIVM. 
+                                               """
+                                               ),
+                                       html.P("""
+                                               The main factor in these models is the reproduction rate (R) which corresponds to 
+                                               the amount of other people everyone with COVID-19 infects. We have estimated this
+                                               number R for two periods: (i) the ramp up period when no measure were yet taken and
+                                               (ii) the surpression period, after implementation of "intelligent lockdown" in NL. 
+                                               Figure 3 shows our estimations of R in these periodes as well as the amount of 
+                                               surpression needed for the amount of IC patients to stay below 1900. 
+                                               """),
                                         dbc.Container(
                                             children=[
                                                 dcc.Graph(
                                                             id = 'R0_bar',
                                                             figure = fig_bar
                                                             ),
+                                                html.P("""
+                                               To see when the peak in ICU patients would happen, we have also modelled the development
+                                               of outbreak over time. Figure 4 shows the expected develpment of the number of ICU patients
+                                               from our model. You can see the impact of changing the reproduction rate R by moving the
+                                               slider. 
+                                               """),
                                                 dcc.Graph(
                                                             id = 'outlook_figure',
                                                             ),
@@ -166,15 +192,15 @@ def update_figure(R):
     solution =  working_model.SEIR_solution(intervention = [(30,factors[0]),(len(hospital),factors[1]), (300,R/2.2)], e0 = 20)
     # create figure
     y_outlook = (solution["I_ic"]+solution["I_hosp"]+solution["R_ic"]+solution["R_hosp"]+0.5*solution["I_fatal"]+0.5*solution["R_fatal"])
-    y_actual = hospital.iloc[:,1]
+    # y_actual = hospital.iloc[:,1]
     y_ic = solution["I_ic"] + solution["I_fatal"] * 0.5
-    ic_cap = np.ones(len(y_outlook))*2400
-    x_outlook = pd.date_range(start='16/2/2018', periods=len(y_outlook))
+    ic_cap = np.ones(len(y_outlook))*1900
+    x_outlook = pd.date_range(start='16/2/2020', periods=len(y_outlook))
     outlook_fig = go.Figure()
     outlook_fig.add_trace(go.Scatter(y=ic_cap, x= x_outlook, name = "ic capacity",
                                      line = dict(color='Lightgrey', width=2, dash='dot')))
-    outlook_fig.add_trace(go.Scatter(y=y_outlook, x= x_outlook, name = "model hospitalizations"))
-    outlook_fig.add_trace(go.Scatter(y=y_actual, x= x_outlook, name = "actual hospitalizations"))
+    # outlook_fig.add_trace(go.Scatter(y=y_outlook, x= x_outlook, name = "model hospitalizations"))
+    # outlook_fig.add_trace(go.Scatter(y=y_actual, x= x_outlook, name = "actual hospitalizations"))
     outlook_fig.add_trace(go.Scatter(y=y_ic, x= x_outlook, name = "model IC beds needed"))
     outlook_fig.update_layout(
         plot_bgcolor='white',
