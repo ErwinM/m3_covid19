@@ -49,8 +49,6 @@ class Covid19Processing:
             r = requests.get(url)  # Retrieve from URL
             self.dataframes[metric] = pd.read_csv(StringIO(r.text), sep=",")  # Convert into Pandas dataframe
             
-        self.ICU = pd.read_csv('ICU_beds.csv', sep = ";")
-
 
     def process(self, rows=20, debug=False):
         # Clean up
@@ -133,14 +131,6 @@ class Covid19Processing:
             by_continent = by_continent
             self.dataframes[metric + "_by_continent"] = by_continent.fillna(0).astype(int)
 
-     
-    def list_countries(self, columns=5):
-        confirmed_by_country = self.dataframes["confirmed_by_country"]
-        n_countries = len(confirmed_by_country)
-        for i, k in enumerate(confirmed_by_country.index):
-            if len(k) > 19:
-                k = k[:18].strip() + "."
-            print(f"{k:20}", end=" " if (i + 1) % columns else "\n")  # Every 5 items, end with a newline
 
     def get_country_data(self, metric):
         if metric+"_by_country" in self.dataframes:
@@ -154,7 +144,6 @@ class Covid19Processing:
             return None
 
     def get_new_cases_details(self, country, avg_n=5, median_n=3):
-        confirmed = self.get_country_data("confirmed").loc[country]
         deaths = self.get_country_data("deaths").loc[country]
         df = pd.DataFrame(deaths)
         df = df.rename(columns={country: "confirmed_deaths"})

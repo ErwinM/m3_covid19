@@ -4,31 +4,43 @@ import dash_core_components as dcc
 import dash_html_components as html
 import plotly.graph_objs as go
 import pandas as pd
-import os
-import plotly
 import dash_bootstrap_components as dbc
 import pandas
 import sys
-is_colab = 'google.colab' in sys.modules
 from covid19_util import *
 from covid19_processing import *
 from dash.dependencies import Input, Output
 import working_model
+import model_fit as mf
 
-
-# data processing
+# get data for question 1
 data = Covid19Processing()
 data.process(rows=20, debug=False)
 
+# fit effective R for question 2, fix factors for speedup
+# factors = mf.fit_REIS(30)
+factors = [1.73919508, 0.4360855]
+hospital = pd.read_csv("hospitalizations.csv", sep = ";")
 
-
-#fetch datasets for dashboard
+#create figures for question 1
 countries_to_plot = ["Netherlands", "Italy", "Germany", "France", "Spain",
                      "Belgium", "United Kingdom", "China"]
 fig_deaths = data.create_growth_figures("deaths",countries_to_plot)
 fig_confirmed = data.create_growth_figures("confirmed",countries_to_plot)
 fig_growth = data.create_factor_figure(countries_to_plot)
 
+# create bar chart for question 2
+Rinitial = 1.73919508 * 2.2
+Ractual = factors[1] * 2.2
+Rtarget = 1
+barnames = ["Estimated R before measures", "Latest estimate of R after measures", "Target to stay below IC capacity"]
+effective_R = go.Bar(y= [Rinitial, Ractual, Rtarget], x = barnames, name = "Reproduction rate")
+repression_data = go.Bar(y= [0, Rinitial- Ractual, Rinitial-Rtarget], x = barnames, name = "Repression")
+fig_bar = go.Figure(data = [effective_R, repression_data])
+fig_bar.update_layout(barmode='stack')
+fig_bar.update_layout(
+    plot_bgcolor='white',
+    title = "Figure 3: development of effective reproduction rate (R)")       
 
 # App definition and authorisation
 app = dash.Dash(__name__,
@@ -112,19 +124,23 @@ page_1_layout = html.Div([navbar,
                             dbc.Card([
                                 dbc.CardBody([
                                         html.H3("Question 2: Is there going to be enough IC capacity for everyone in need?"),
-                                        html.P("<Decription of SEIR model here>"),
+                                        html.P("Figure 3 shows the preliminary results of our SEIR model fitted to NL data"),
                                         dbc.Container(
                                             children=[
                                                 dcc.Graph(
+                                                            id = 'R0_bar',
+                                                            figure = fig_bar
+                                                            ),
+                                                dcc.Graph(
                                                             id = 'outlook_figure',
                                                             ),
-                                                html.P("Change value of the basic reproduction number (R_0) to see impact on number of infections:"),
+                                                html.P("Change value of the effective reproduction number (R) as of today to see impact on number of infections:"),
                                                 html.Div([
-                                                dcc.Slider(id = 'r_slider',
+                                                dcc.Slider(id = 'I1_slider',
                                                                min = 0,
-                                                               max = 4,
+                                                               max = 2,
                                                                step = 0.1,
-                                                               value = 2.2,
+                                                               value = Ractual,
                                                                marks = {
                                                                    0: '0',
                                                                    1: '1',
@@ -133,37 +149,43 @@ page_1_layout = html.Div([navbar,
                                                                    4: '4'})], style = {'width': '70%'})])])], style = dict(marginTop= "20px"))
                             ], style = dict(marginTop= "20px"))])
 
-# page two with forecast
+# page two with background
 page_2_layout = html.Div(navbar)
 
-## html
+# full app layout
 app.layout = html.Div(
     [dcc.Location(id = 'url', refresh = False),
      html.Div(id = 'page-content')])
 
+# interactivity is handled by callbacks. Used here to let graph interact with slider
 @app.callback(
     Output('outlook_figure', 'figure'),
-    [Input('r_slider', 'value')])
+    [Input('I1_slider', 'value')])
 def update_figure(R):
-    solution =  working_model.SEIR_solution(N = 17000000, e0 = 0, i0 = 100 , r0 = 0,
-                  R0 = R, intervention = [(20,1), (300,0.3)],
-                  t_inc = 5.2, t_inf = 3)
-    list_of_measures = ['I_total','I_ic', 'R_fatal']
+    # get fitted model
+    solution =  working_model.SEIR_solution(intervention = [(30,factors[0]),(len(hospital),factors[1]), (300,R/2.2)], e0 = 20)
+    # create figure
+    y_outlook = (solution["I_ic"]+solution["I_hosp"]+solution["R_ic"]+solution["R_hosp"]+0.5*solution["I_fatal"]+0.5*solution["R_fatal"])
+    y_actual = hospital.iloc[:,1]
+    y_ic = solution["I_ic"] + solution["I_fatal"] * 0.5
+    ic_cap = np.ones(len(y_outlook))*2400
+    x_outlook = pd.date_range(start='16/2/2018', periods=len(y_outlook))
     outlook_fig = go.Figure()
-    mapping = {"I_total": "Infectious", "I_ic": "On intensive care", "R_fatal": "Deaths"}
-    for measure in list_of_measures:
-        y_outlook = solution[measure]
-        x_outlook = solution['day']
-        outlook_fig.add_trace(go.Scatter(y=y_outlook, x= x_outlook, name = mapping[measure]))
-        outlook_fig.update_layout(
-            plot_bgcolor='white',
-            xaxis_title="Days",
+    outlook_fig.add_trace(go.Scatter(y=ic_cap, x= x_outlook, name = "ic capacity",
+                                     line = dict(color='Lightgrey', width=2, dash='dot')))
+    outlook_fig.add_trace(go.Scatter(y=y_outlook, x= x_outlook, name = "model hospitalizations"))
+    outlook_fig.add_trace(go.Scatter(y=y_actual, x= x_outlook, name = "actual hospitalizations"))
+    outlook_fig.add_trace(go.Scatter(y=y_ic, x= x_outlook, name = "model IC beds needed"))
+    outlook_fig.update_layout(
+        plot_bgcolor='white',
+        xaxis_title="Days",
+        title = "Figure 4: Forecast of IC utilization"
             )
     outlook_fig.update_xaxes(showgrid=True, gridwidth=1, gridcolor='LightGrey')
     outlook_fig.update_yaxes(showgrid=True, gridwidth=1, gridcolor='LightGrey')
     return outlook_fig 
 
-
+## callback for switching page
 @app.callback(Output('page-content', 'children'), [Input('url', 'pathname')])
 def display_page(pathname):
     if pathname == '/page-1':
@@ -173,7 +195,7 @@ def display_page(pathname):
     else:
         return page_1_layout
 
-
+# serve app 
 if __name__ == '__main__':
     app.run_server(debug = False)
     

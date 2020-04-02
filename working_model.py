@@ -7,17 +7,19 @@ Created on Thu Mar 26 15:06:50 2020
 
 # Python program to implement Runge Kutta method 
 
-
 import numpy as np
 import pandas as pd
 from scipy.integrate import odeint
 import bisect
 import matplotlib.pyplot as plt
 
-def SEIR_solution(N = 17000000, e0 = 0, i0 = 1 , r0 = 0,
-                  R0 = 2.2, intervention = [(100,1), (300, 0.2)],
-                  t_inc = 5.2, t_inf = 3):
+def SEIR_solution(intervention = [(100,1), (300, 0.2)],e0 = 0):
     # INPUT PARAMETERS
+    N = 17000000
+    i0 = 1
+    R0 = 2.2
+    t_inc = 5.2
+    t_inf = 3
     s0 = N - i0 / N
     
     # Array of tuples: (day, Rint), Rint = 1 means no measures (eg 100% R0)
@@ -34,8 +36,8 @@ def SEIR_solution(N = 17000000, e0 = 0, i0 = 1 , r0 = 0,
     
     # Clinical proportions
     p_mild = 0.8
-    p_hosp_0 = 0.16 # hospitalised
-    p_ic_0 = 0.04 # IC
+    p_hosp_0 = 0.15 # hospitalised
+    p_ic_0 = 0.05 # IC
     
     # mortality
     p_fatal = 0.02
@@ -49,8 +51,8 @@ def SEIR_solution(N = 17000000, e0 = 0, i0 = 1 , r0 = 0,
     t_hosp_net = t_hosp - t_inf
     t_ic_net = t_ic - t_inc
     
-    p_hosp = p_hosp_0 - (1-p_fatal_ic) * p_fatal
-    p_ic = p_ic_0 - p_fatal_ic * p_fatal
+    p_hosp = p_hosp_0 - (3/4) * p_fatal
+    p_ic = p_ic_0 - (1/4) * p_fatal
     assert(p_mild+p_hosp+p_ic+p_fatal == 1)
     
 
@@ -84,7 +86,7 @@ def SEIR_solution(N = 17000000, e0 = 0, i0 = 1 , r0 = 0,
                 dr_mild, dr_hosp, dr_ic, dr_fatal]
     
     # Create time domain
-    t_span = np.linspace(0, 200, 100, endpoint=False)
+    t_span = np.linspace(0, 100, 100, endpoint=False)
     
     # Initial condition
     Uzero = [s0, e0, i0, 0, 0, 0, 0, 0, 0, 0, 0, 0, 0]
@@ -100,13 +102,4 @@ def SEIR_solution(N = 17000000, e0 = 0, i0 = 1 , r0 = 0,
     
     # add timeframe as a column
     df['day'] = t_span
-    
-    # plot
-    #plt.plot(t_span, solution[:, 0], label='masse');
-    plt.plot(t_span, solution[:, 5], label='Hospital (non-IC');
-    #plt.plot(t_span, solution[:, 2], label='Infectious');
-    plt.plot(t_span, df['I_ic'], label='IC');
-    plt.plot(t_span, df['I_fatal'], label='Fatal');
-    plt.legend();
-    plt.xlabel('time'); 
     return df
