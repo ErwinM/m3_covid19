@@ -6,42 +6,28 @@ import plotly.graph_objs as go
 import pandas as pd
 import dash_bootstrap_components as dbc
 import pandas
-import sys
 from covid19_util import *
 from covid19_processing import *
 from dash.dependencies import Input, Output
-import working_model
-import model_fit as mf
+import forecast
 
-# get data for question 1
+
+#create static figures for question 1
 data = Covid19Processing()
 data.process(rows=20, debug=False)
-
-# fit effective R for question 2, fix factors for speedup
-factors = mf.fit_REIS(30)
-# factors = [1.73919508, 0.4360855]
-hospital = pd.read_csv("hospitalizations.csv", sep = ";")
-
-#create figures for question 1
 countries_to_plot = ["Netherlands", "Italy", "Germany", "France", "Spain",
                      "Belgium", "United Kingdom", "China"]
 fig_deaths = data.create_growth_figures("deaths",countries_to_plot)
 fig_confirmed = data.create_growth_figures("confirmed",countries_to_plot)
 fig_growth = data.create_factor_figure(countries_to_plot)
 
-# create bar chart for question 2
-Rinitial = 1.73919508 * 2.2
-Ractual = factors[1] * 2.2
-Rtarget = 1
-barnames = ["Estimated R before measures", "Latest estimate of R after measures", "Target to stay below IC capacity"]
-effective_R = go.Bar(y= [Rinitial, Ractual, Rtarget], x = barnames, name = "Reproduction rate (R)")
-repression_data = go.Bar(y= [0, Rinitial- Ractual, Rinitial-Rtarget], x = barnames, name = "Surpression of R from lockdown", marker_color = "LightGrey")
-fig_bar = go.Figure(data = [effective_R, repression_data])
-fig_bar.update_layout(barmode='stack')
-fig_bar.update_layout(
-    plot_bgcolor='white',
-    title = "Figure 3: development of effective reproduction rate (R)")       
 
+# create static figures for question 2
+forecaster = forecast.forecast_covid19()
+forecaster.fit_REIS(cutoff= 30, name = "outlook")
+factors = forecaster.factors["outlook"]
+Rtarget = forecaster.determine_Rtarget(name = "outlook")
+    
 # App definition and authorisation
 app = dash.Dash(__name__,
                 external_stylesheets = [dbc.themes.BOOTSTRAP])
@@ -90,7 +76,7 @@ page_1_layout = html.Div([navbar,
                                                """),
                                                
                                         html.P("""
-                                               To see if measures to stop the growth are succesfully, we could look at a few figures:
+                                               To see if measures to stop the growth are succesful, we could look at a few figures:
                                                the number of confirmed cases, hospitalizations and death toll. Measurement of all these figures
                                                is distorted by the amount of tests executed, even for the number of deaths. However, we can
                                                compare the trajectory of the latter between various countries to get an idea of whether or not the
@@ -133,47 +119,45 @@ page_1_layout = html.Div([navbar,
                                        html.P("""    
                                                
                                                The RIVM provides us with new forecasts on a weekly basis, so to keep ourselves updated
-                                               in the meantime we have created a simplified forecasting model similar to the models 
-                                               used by the RIVM. 
+                                               in the meantime we have created a forecasting model similar to the models 
+                                               used by the RIVM, albeit a simplified version of course. 
                                                """
                                                ),
                                        html.P("""
                                                The main factor in these models is the reproduction rate (R) which corresponds to 
                                                the amount of other people everyone with COVID-19 infects. We have estimated this
-                                               number R for two periods: (i) the ramp up period when no measure were yet taken and
+                                               number R for two periods: (i) the ramp up period when no measures were yet taken and
                                                (ii) the surpression period, after implementation of "intelligent lockdown" in NL. 
-                                               Figure 3 shows our estimations of R in these periodes as well as the amount of 
-                                               surpression needed for the amount of IC patients to stay below 1900. 
+                                               Figure 3 shows our estimations of the reproduction rate in these periodes as well as the rate
+                                               we need for the amount of IC patients to stay below 1900. 
                                                """),
-                                        dbc.Container(
-                                            children=[
-                                                dcc.Graph(
+                                        dbc.Row([
+                                                dbc.Col(dcc.Graph(
                                                             id = 'R0_bar',
-                                                            figure = fig_bar
-                                                            ),
-                                                html.P("""
+                                                            )),
+                                                dbc.Col(html.Div(children = [dcc.Slider(id = 'I1_slider',
+                                                                   vertical = True,
+                                                                   verticalHeight = 300,
+                                                                   min = 0,
+                                                                   max = 2,
+                                                                   step = 0.01,
+                                                                   value = Rtarget,
+                                                                   marks = {
+                                                                       0: 'Target = 0',
+                                                                       1: 'Target = 1',
+                                                                       2: 'Target = 2',
+                                                                       3: '3',
+                                                                       4: '4'})], style = {"marginTop": "100px"}), width = 2)]),
+                                        html.P("""
                                                To see when the peak in ICU patients would happen, we have also modelled the development
                                                of outbreak over time. Figure 4 shows the expected develpment of the number of ICU patients
                                                from our model. You can see the impact of changing the reproduction rate R by moving the
                                                slider. 
                                                """),
-                                                dcc.Graph(
-                                                            id = 'outlook_figure',
-                                                            ),
-                                                html.P("Change value of the effective reproduction number (R) as of today to see impact on number of infections:"),
-                                                html.Div([
-                                                dcc.Slider(id = 'I1_slider',
-                                                               min = 0,
-                                                               max = 2,
-                                                               step = 0.1,
-                                                               value = Ractual,
-                                                               marks = {
-                                                                   0: '0',
-                                                                   1: '1',
-                                                                   2: '2',
-                                                                   3: '3',
-                                                                   4: '4'})], style = {'width': '70%'})])])], style = dict(marginTop= "20px"))
-                            ], style = dict(marginTop= "20px"))])
+                                        dcc.Graph(
+                                                    id = 'outlook_figure',
+                                                    )],
+                                                style = dict(marginTop= "20px"))], style = dict(marginTop= "20px"))])])
 
 # page two with background
 page_2_layout = html.Div(navbar)
@@ -187,21 +171,32 @@ app.layout = html.Div(
 @app.callback(
     Output('outlook_figure', 'figure'),
     [Input('I1_slider', 'value')])
-def update_figure(R):
+def update_figure1(R):    
+    #TO DO: integrate most of this into forecaster class
     # get fitted model
-    solution =  working_model.SEIR_solution(intervention = [(30,factors[0]),(len(hospital),factors[1]), (300,R/2.2)], e0 = 20)
+    solution_outlook =  forecaster.SEIR_solution(intervention = [(30,factors[0]),(len(forecaster.hospitals),factors[1]), (300,factors[1])], e0 = 20)
+    solution_target = forecaster.SEIR_solution(intervention = [(30,factors[0]),(len(forecaster.hospitals),R/2.2), (300,R/2.2)], e0 = 20)    
+    # y_outlook = (solution_outlook["I_ic"]+solution_outlook["I_hosp"]+solution_outlook["R_ic"]+solution_outlook["R_hosp"]+0.5*solution_outlook["I_fatal"]+0.5*solution_outlook["R_fatal"])
+    # # y_actual = hospital.iloc[:,1]
+
+    # create data sets for figures with outlook IC utilization and target IC utilization
+    y_ic_outlook = solution_outlook["I_ic"] + solution_outlook["I_fatal"] * 0.5
+    y_ic_target = solution_target["I_ic"] + solution_target["I_fatal"] * 0.5
+    ic_cap = np.ones(len(y_ic_outlook))*1900
+    x_outlook = pd.date_range(start='16/2/2020', periods=len(y_ic_outlook))
+
     # create figure
-    y_outlook = (solution["I_ic"]+solution["I_hosp"]+solution["R_ic"]+solution["R_hosp"]+0.5*solution["I_fatal"]+0.5*solution["R_fatal"])
-    # y_actual = hospital.iloc[:,1]
-    y_ic = solution["I_ic"] + solution["I_fatal"] * 0.5
-    ic_cap = np.ones(len(y_outlook))*1900
-    x_outlook = pd.date_range(start='16/2/2020', periods=len(y_outlook))
     outlook_fig = go.Figure()
     outlook_fig.add_trace(go.Scatter(y=ic_cap, x= x_outlook, name = "ic capacity",
                                      line = dict(color='Lightgrey', width=2, dash='dot')))
     # outlook_fig.add_trace(go.Scatter(y=y_outlook, x= x_outlook, name = "model hospitalizations"))
     # outlook_fig.add_trace(go.Scatter(y=y_actual, x= x_outlook, name = "actual hospitalizations"))
-    outlook_fig.add_trace(go.Scatter(y=y_ic, x= x_outlook, name = "model IC beds needed"))
+    outlook_fig.add_trace(go.Scatter(y=y_ic_outlook, x= x_outlook, name = "IC beds at current R",
+                                     line = dict(color = 'orange')))
+    outlook_fig.add_trace(go.Scatter(y=y_ic_target, x= x_outlook, name = "IC beds at target R",
+                                     line = dict(color = 'green')))
+
+    # format figure
     outlook_fig.update_layout(
         plot_bgcolor='white',
         xaxis_title="Days",
@@ -210,6 +205,13 @@ def update_figure(R):
     outlook_fig.update_xaxes(showgrid=True, gridwidth=1, gridcolor='LightGrey')
     outlook_fig.update_yaxes(showgrid=True, gridwidth=1, gridcolor='LightGrey')
     return outlook_fig 
+
+@app.callback(
+    Output('R0_bar', 'figure'),
+    [Input('I1_slider', 'value')])
+def update_figure2(R):
+    return forecaster.create_bar(name = "outlook", Rtarget = R)
+
 
 ## callback for switching page
 @app.callback(Output('page-content', 'children'), [Input('url', 'pathname')])
