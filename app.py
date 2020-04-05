@@ -58,7 +58,7 @@ page_1_layout = html.Div([navbar,
                                                a new number of confirmed COVID-19 cases, the daily death toll, the number of hospitalizations, number 
                                                of IC patients, the number of recoveries, number of positive tests and much more. We ourselves got 
                                                a bit flustered by all the data presented to us on a daily basis and decided to create just a couple 
-                                               of graphs to keep track of the situation, with two major questions in mind: 
+                                               of graphs to keep track of the situation, with two major questions in mind:  
                                                """),
                                         html.Ul([html.P("1.  Is the spread of COVID-19 slowing down?"),
                                                  html.P("2.  Is there going to be enough IC capacity to help everyone in need?")]),
