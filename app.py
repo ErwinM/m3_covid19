@@ -39,10 +39,10 @@ navbar = dbc.Container(
                         children=[
                     dbc.NavbarSimple(
                             children = [
-                                dbc.NavLink("Dashboard", href="/page-1", id = "page-1-link"),
-                                dbc.NavLink("Background", href="/page-2", id = "page-2-link")],
+                                dbc.NavLink("Dashboard", href="/dashboard", id = "dasbhoard-link"),
+                                dbc.NavLink("Background", href="/background", id = "background-link")],
                             brand = "M3 Consultancy | COVID dashboard",
-                            brand_href="/page-1",
+                            brand_href="/dashboard",
                             color="#E21F35",
                             dark=True,
                             # fluid = True,
@@ -156,7 +156,112 @@ page_1_layout = html.Div([navbar,
                                                              width = "900px"))], style = dict(marginTop= "20px"))
 
 # page two with background
-page_2_layout = html.Div(navbar)
+page_2_layout = html.Div([
+                    navbar,
+                    dbc.Container([                        
+                        html.H3("A model to forecast the COVID-19 outbreak"),
+                        html.P(
+                            """
+                            Modelling the COVID-19 outbreak is a complex endeavour: very little is known
+                            about key factors such as the infectious period, incubation time, mortality rate
+                            and reproduction rate. Models by any party therefore carry a high amount of 
+                            uncertainty. This does not mean they should not be made though, as they do 
+                            provide insight in what direction the outbreak is progressing and are key to 
+                            supporting decision-makers in their next steps. 
+                            """),
+                        html.P([
+                            """
+                            To keep ourselves up to date on the latest forecast, we have created our own
+                            model to forecast the development of the COVID-19 outbreak. It is a so-called 
+                            compartmental model, a common approach to modelling epedemics. You can find a good
+                            description of a simple compartmental model        
+                            """, 
+                            html.A(" in this video", href = "https://www.youtube.com/watch?v=Qrp40ck3WpI", target = "_blank")]
+                            ),
+                        html.P([
+                            """
+                            If you are curious as to how we implemented the compartmental model and what parameters we used,
+                            have a look at the source code and further descriptions on our 
+                            """,
+                            html.A("Github.", href = "https://github.com/ErwinM/m3_covid19", target = "_blank")]),
+                        html.P(
+                            """
+                            To give you an idea of how the model works, Figure 5 outlines the various outcomes of the model
+                            and lets you see the impact of changing some of the key input parameters. 
+                            """),
+                        dcc.Graph(
+                                id = 'sensitivity_figure',
+                                ),
+                        html.P("Choose measures"),
+                        dcc.Dropdown(
+                                id = 'measure_dropdown',
+                                options=[
+                                    {'label': 'Patients in hospital', 'value': 'Patients in hospital'},
+                                    {'label': 'Patients on IC', 'value': 'Patients on IC'},
+                                    {'label': 'Infectious', 'value': 'Infectious'},
+                                    {'label': 'Recovered', 'value': 'Recovered'},
+                                    {'label': 'Susceptible', 'value': 'Susceptible'}
+                                   
+                                ],
+                                value=['Infectious','Patients in hospital', 'Patients on IC'],
+                                multi=True
+                            ),  
+                        
+                        html.P(["Days to forecast"], style = {"marginTop": "10px"}),
+                            dcc.Slider(
+                                id = 'days_slider',
+                                min = 0,
+                                max = 800,
+                                step = 10,
+                                value = 100,
+                                marks = {
+                                    0: '0',
+                                    200: '200',
+                                    400: '400',
+                                    600: '600',
+                                    800: '800'}),
+                        html.P(["Reproduction rate after measures"], style = {"marginTop": "10px"}),
+                        dcc.Slider(
+                                id = 'R_slider',
+                                min = 0,
+                                max = 2,
+                                step = 0.01,
+                                value = factors[1]*2.2,
+                                marks = {
+                                    0: '0',
+                                    1: '1',
+                                    2: '2',
+                                    3: '3',
+                                    4: '4'}),
+                        html.P(["Incubation time"], style = {"marginTop": "10px"}),
+                        dcc.Slider(
+                                id = 'Inc_slider',
+                                min = 0,
+                                max = 8,
+                                step = 0.01,
+                                value = 5.2,
+                                marks = {
+                                    0: '0',
+                                    2: '2',
+                                    4: '4',
+                                    6: '6',
+                                    8: '8'}),
+                        html.P(["Time on IC"], style = {"marginTop": "10px"}),
+                        dcc.Slider(
+                                id = 'IC_slider',
+                                min = 0,
+                                max = 40,
+                                step = 0.01,
+                                value = 21,
+                                marks = {
+                                    0: '0',
+                                    10: '10',
+                                    20: '20',
+                                    30: '30',
+                                    40: '40'}),                            
+                        ], 
+                    style = {"marginTop":"100px",
+                             "width": "900px"})])
 
 # full app layout
 app.layout = html.Div(
@@ -202,6 +307,47 @@ def update_figure1(R):
     outlook_fig.update_yaxes(showgrid=True, gridwidth=1, gridcolor='LightGrey')
     return outlook_fig 
 
+mapping = {"Patients in hospital": "Hosp_tot",
+           "Patients on IC": "IC_total",
+           "Infectious": "I_total",
+           "Deaths":"R_fatal",
+           "Recovered": "R_total",
+           "Susceptible": "Susceptible",
+           "Deaths": "R_fatal"}
+
+@app.callback(
+    Output('sensitivity_figure', 'figure'),
+    [Input('measure_dropdown', 'value'),
+     Input('R_slider', 'value'),
+     Input('days_slider', 'value'),
+     Input('Inc_slider', 'value'),
+     Input('IC_slider', 'value'),
+     ])
+def update_figure1(measures, R, days, inc, IC):    
+    #TO DO: integrate most of this into forecaster class
+    # get fitted model
+    solution_outlook =  forecaster.SEIR_solution(intervention = [(30,factors[0]),(len(forecaster.hospitals),R/2.2), (10000,R/2.2)],
+                                                 e0 = 20, days = days, t_inc = inc, t_ic = IC)
+    solution_outlook["IC_total"] = solution_outlook["I_ic"] + solution_outlook["I_fatal"] * 0.5
+    solution_outlook["R_total"] = solution_outlook["R_mild"] + solution_outlook["R_hosp"]  + solution_outlook["R_ic"]  
+    solution_outlook["Hosp_tot"] = solution_outlook["I_ic"] + solution_outlook["I_hosp"] + solution_outlook["I_fatal"] 
+    x_outlook = pd.date_range(start='16/2/2020', periods=len(solution_outlook))
+    outlook_fig = go.Figure()
+    
+    for measure in measures:
+        outlook_fig.add_trace(go.Scatter(y=solution_outlook[mapping[measure]], x= x_outlook, name = measure))
+        # format figure
+    outlook_fig.update_layout(
+        plot_bgcolor='white',
+        xaxis_title="Days",
+        title = "Figure 5: Outcome of forecast model, number of people for various measures"
+            )
+    outlook_fig.update_xaxes(showgrid=True, gridwidth=1, gridcolor='LightGrey')
+    outlook_fig.update_yaxes(showgrid=True, gridwidth=1, gridcolor='LightGrey')
+    return outlook_fig 
+
+
+
 @app.callback(
     Output('R0_bar', 'figure'),
     [Input('I1_slider', 'value')])
@@ -212,9 +358,9 @@ def update_figure2(R):
 ## callback for switching page
 @app.callback(Output('page-content', 'children'), [Input('url', 'pathname')])
 def display_page(pathname):
-    if pathname == '/page-1':
+    if pathname == '/dashboard':
         return page_1_layout
-    elif pathname == '/page-2':
+    elif pathname == '/background':
         return page_2_layout
     else:
         return page_1_layout

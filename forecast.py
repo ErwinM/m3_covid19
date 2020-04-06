@@ -20,13 +20,12 @@ class forecast_covid19:
         self.forecasts = {}
         self.factors = {}    
         
-    def SEIR_solution(self, intervention = [(100,1), (300, 0.2)],e0 = 0):
+    def SEIR_solution(self, intervention = [(100,1), (10000, 0.2)],e0 = 0, days = 150,
+                      t_inc = 5.2, t_inf = 3, t_ic = 21):
         # INPUT PARAMETERS
         N = 17000000
         i0 = 1
         R0 = 2.2
-        t_inc = 5.2
-        t_inf = 3
         s0 = N - i0 / N
         
         # Array of tuples: (day, Rint), Rint = 1 means no measures (eg 100% R0)
@@ -37,7 +36,6 @@ class forecast_covid19:
         # Time periods (days)
         t_mild = 11 # duration of mild case
         t_hosp = 7 # duration for hospital, but non IC cases
-        t_ic = 21 # duration of IC cases
         t_fatal = 21
         t_hlag = 5 # duration before patient ends up in hospital
         
@@ -93,7 +91,7 @@ class forecast_covid19:
                     dr_mild, dr_hosp, dr_ic, dr_fatal]
         
         # Create time domain
-        t_span = np.linspace(0, 150, 150, endpoint=False)
+        t_span = np.linspace(0, days, days, endpoint=False)
         
         # Initial condition
         Uzero = [s0, e0, i0, 0, 0, 0, 0, 0, 0, 0, 0, 0, 0]
@@ -115,7 +113,7 @@ class forecast_covid19:
         
         def rmse(factors):
             y1,y2 = factors
-            outcome = self.SEIR_solution(intervention = [(cutoff,y1), (300,y2)], e0 = 20)
+            outcome = self.SEIR_solution(intervention = [(cutoff,y1), (10000,y2)], e0 = 20)
             model_hosp = (outcome["I_hosp"] +outcome["I_ic"]+outcome["R_hosp"]+outcome["R_ic"]+\
                           0.5*outcome["I_fatal"]+0.5*outcome["R_fatal"]).iloc[:len(self.hospitals)]
             return np.sqrt(np.sum((model_hosp - self.hospitals.iloc[:,1])**2))
@@ -133,7 +131,7 @@ class forecast_covid19:
         
         while maximum > 1900:
             Rtarget = Rtarget - 0.01
-            solution =  self.SEIR_solution(intervention = [(30,self.factors[name][0]),(len(self.hospitals),Rtarget/2.2), (300,Rtarget/2.2)], e0 = 20)
+            solution =  self.SEIR_solution(intervention = [(30,self.factors[name][0]),(len(self.hospitals),Rtarget/2.2), (10000,Rtarget/2.2)], e0 = 20)
             IC = solution["I_ic"] + 0.5 * solution["I_fatal"]
             maximum = IC.max()
         return Rtarget
