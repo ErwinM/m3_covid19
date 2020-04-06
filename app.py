@@ -10,6 +10,7 @@ from covid19_util import *
 from covid19_processing import *
 from dash.dependencies import Input, Output
 import forecast
+from datetime import date
 
 
 #create static figures for question 1
@@ -65,7 +66,8 @@ page_1_layout = html.Div([navbar,
                                         html.P("""
                                                The dashboard below tries to help you get a grip on these two questions as the situation evolves.
                                                It is therefore updated daily at midnight to have the latest figures at hand. 
-                                               """)]),
+                                               """)
+                                               ]),
                                         html.H3("Question 1: Is the spread of COVID-19 slowing down?"),
                                         html.P("""
                                                Epidemic spread of a disease follows an exponential growth pattern. Meaning that as long as everyone that
@@ -151,7 +153,9 @@ page_1_layout = html.Div([navbar,
                                                """),
                                         dcc.Graph(
                                                     id = 'outlook_figure',
-                                                    )],
+                                                    ),
+                                        html.P(["Number of deaths per country last updated per: ", str((date.today()-datetime.timedelta(days = 1)).strftime("%d/%m/%Y"))], style = {"fontSize":"70%"}),
+                                        html.P(["Forecast fitted to hospitalizations in NL up until: ", forecaster.hospitals.iloc[-1,0]], style = {"fontSize":"70%"})],
                                                 style = dict(marginTop= "20px",
                                                              width = "900px"))], style = dict(marginTop= "20px"))
 
