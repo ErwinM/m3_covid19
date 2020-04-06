@@ -54,7 +54,7 @@ page_1_layout = html.Div([navbar,
                  dbc.Container([
                         dbc.Jumbotron( [html.H2("How to make sense of COVID-19 figures in The Netherlands?"),
                                         html.P("""
-                                               Anyone following the news in the last weeks is confonted with a lot and mostly worrying figures every day: 
+                                               Anyone following the news in the last weeks is confronted with a lot and mostly worrying figures every day: 
                                                a new number of confirmed COVID-19 cases, the daily death toll, the number of hospitalizations, number 
                                                of IC patients, the number of recoveries, number of positive tests and much more. We ourselves got 
                                                a bit flustered by all the data presented to us on a daily basis and decided to create just a couple 
@@ -66,8 +66,6 @@ page_1_layout = html.Div([navbar,
                                                The dashboard below tries to help you get a grip on these two questions as the situation evolves.
                                                It is therefore updated daily at midnight to have the latest figures at hand. 
                                                """)]),
-                        dbc.Card(
-                                dbc.CardBody([
                                         html.H3("Question 1: Is the spread of COVID-19 slowing down?"),
                                         html.P("""
                                                Epidemic spread of a disease follows an exponential growth pattern. Meaning that as long as everyone that
@@ -77,8 +75,8 @@ page_1_layout = html.Div([navbar,
                                                
                                         html.P("""
                                                To see if measures to stop the growth are succesful, we could look at a few figures:
-                                               the number of confirmed cases, hospitalizations and death toll. Measurement of all these figures
-                                               is distorted by the amount of tests executed, even for the number of deaths. However, we can
+                                               the number of confirmed cases, hospitalizations or death toll for example. Measurement of these figures
+                                               is distorted by the amount of tests executed in each country, even for the number of deaths. However, we can
                                                compare the trajectory of the latter between various countries to get an idea of whether or not the
                                                virus is still spreading exponentially or not.                                               
                                                """),
@@ -92,9 +90,9 @@ page_1_layout = html.Div([navbar,
                                         html.P("""
                                                Figure 1 shows the growth trajectory of the number of deaths in several European countries. 
                                                The axis are logaritmic, meaning that every major step in the axis corresponds to a 10-fold increase.
-                                               We can see here that indeed most European countries have moved away from the scenario where
+                                               We can see here that most European countries have moved away from the scenario where
                                                the number of deaths increases with a two-fold every day. To see more clearly how fast the number
-                                               of deaths is still growing we should look at figure 2, which shows the day on day growth rate of 
+                                               of deaths is still growing we should look at figure 2, which shows the day-to-day growth rate of 
                                                the new number of deaths. 
                                                """),
                                         dbc.Container(
@@ -105,11 +103,9 @@ page_1_layout = html.Div([navbar,
                                                         )]),
                                         html.P("""
                                                Figure 2 takes the average number of newly reported deaths of the past 
-                                               five days and compares it to the average calculated yesterday. If this number drops to 0 or below, this means
+                                               five days and compares it to the average calculated yesterday. If this number drops to 0 or below, the
                                                spread of COVID-19 has been stabilized and is no longer growing exponentially. 
-                                               """)])),
-                            dbc.Card([
-                                dbc.CardBody([
+                                               """),
                                         html.H3("Question 2: Is there going to be enough IC capacity for everyone in need?"),
                                         html.P("""
                                                This is not an easy question to answer, as it involves forecasting the amount of
@@ -134,7 +130,7 @@ page_1_layout = html.Div([navbar,
                                         dbc.Row([
                                                 dbc.Col(dcc.Graph(
                                                             id = 'R0_bar',
-                                                            )),
+                                                            ), md = 10),
                                                 dbc.Col(html.Div(children = [dcc.Slider(id = 'I1_slider',
                                                                    vertical = True,
                                                                    verticalHeight = 300,
@@ -147,17 +143,17 @@ page_1_layout = html.Div([navbar,
                                                                        1: 'Target = 1',
                                                                        2: 'Target = 2',
                                                                        3: '3',
-                                                                       4: '4'})], style = {"marginTop": "100px"}), width = 2)]),
+                                                                       4: '4'})], style = {"marginTop": "100px"}), md = 2)]),
                                         html.P("""
-                                               To see when the peak in ICU patients would happen, we have also modelled the development
-                                               of outbreak over time. Figure 4 shows the expected develpment of the number of ICU patients
-                                               from our model. You can see the impact of changing the reproduction rate R by moving the
-                                               slider. 
+                                               To see when a peak in ICU patients would occur, we have also modelled the development
+                                               of patients over time. Figure 4 shows the expected number of ICU patients from our model. 
+                                               Changing the above slider will show you the effect of reaching a certain average reproduction rate.
                                                """),
                                         dcc.Graph(
                                                     id = 'outlook_figure',
                                                     )],
-                                                style = dict(marginTop= "20px"))], style = dict(marginTop= "20px"))])])
+                                                style = dict(marginTop= "20px",
+                                                             width = "900px"))], style = dict(marginTop= "20px"))
 
 # page two with background
 page_2_layout = html.Div(navbar)

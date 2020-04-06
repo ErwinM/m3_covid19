@@ -93,7 +93,7 @@ class forecast_covid19:
                     dr_mild, dr_hosp, dr_ic, dr_fatal]
         
         # Create time domain
-        t_span = np.linspace(0, 100, 100, endpoint=False)
+        t_span = np.linspace(0, 150, 150, endpoint=False)
         
         # Initial condition
         Uzero = [s0, e0, i0, 0, 0, 0, 0, 0, 0, 0, 0, 0, 0]
@@ -142,7 +142,7 @@ class forecast_covid19:
         # create bar chart for question 2
         Rinitial = self.factors[name][0] * 2.2
         Ractual = self.factors[name][1] * 2.2
-        barnames = ["Estimated R before measures", "Latest estimate of R after measures", "Target to stay below IC capacity"]
+        barnames = ["R before measures", "R after measures", "Target R"]
         barcolors = ['red', 'orange', 'green']
         effective_R = go.Bar(y= [Rinitial, Ractual, Rtarget], x = barnames, name = "Reproduction rate (R)", marker_color = barcolors)
         fig_bar = go.Figure(data = [effective_R])
