@@ -110,14 +110,16 @@ class forecast_covid19:
         df['day'] = t_span
         return df
     
-    def fit_REIS(self, cutoff = 30, name = 'default'):
+    def fit_REIS(self, cutoff = 30, name = 'default', days_back = 0):
+               
+        hospital_hist = self.hospitals.iloc[0:len(self.hospitals)-days_back,:]
         
         def rmse(factors):
             y1,y2 = factors
             outcome = self.SEIR_solution(intervention = [(cutoff,y1), (10000,y2)], e0 = 20)
             model_hosp = (outcome["I_hosp"] +outcome["I_ic"]+outcome["R_hosp"]+outcome["R_ic"]+\
                           0.5*outcome["I_fatal"]+0.5*outcome["R_fatal"]).iloc[:len(self.hospitals)]
-            return np.sqrt(np.mean((model_hosp - self.hospitals.iloc[:,1])**2))
+            return np.sqrt(np.mean((model_hosp - hospital_hist.iloc[:,1])**2))
         
         opt1 = scipy.optimize.minimize(rmse, [1.7,0.8], bounds = [(0.000001, 3), (0.000001, 3)], method = "L-BFGS-B")
         factors = opt1.x

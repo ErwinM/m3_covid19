@@ -5,28 +5,35 @@ import dash_html_components as html
 import plotly.graph_objs as go
 import pandas as pd
 import dash_bootstrap_components as dbc
-import pandas
 from covid19_util import *
 from covid19_processing import *
 from dash.dependencies import Input, Output
 import forecast
 from datetime import date
 
+##create static figures for question 1
 
-#create static figures for question 1
+# get data from JHU
 data = Covid19Processing()
 data.process(rows=20, debug=False)
+
+# plot deaths and daily growth rate
 countries_to_plot = ["Netherlands", "Italy", "Germany", "France", "Spain",
                      "Belgium", "United Kingdom", "China"]
 fig_deaths = data.create_growth_figures("deaths",countries_to_plot)
-fig_confirmed = data.create_growth_figures("confirmed",countries_to_plot)
 fig_growth = data.create_factor_figure(countries_to_plot)
 
+## create static figures for question 2
 
-# create static figures for question 2
+# fit model to hospitalizations
 forecaster = forecast.forecast_covid19()
 forecaster.fit_REIS(cutoff= 30, name = "outlook")
+forecaster.fit_REIS(cutoff= 30, name = "historic", days_back = 2)
+
+# get betas from fitted model
 factors = forecaster.factors["outlook"]
+
+# get target R to stay below 1900 IC beds
 Rtarget = forecaster.determine_Rtarget(name = "outlook")
     
 # App definition and authorisation
@@ -35,7 +42,7 @@ app = dash.Dash(__name__,
 server = app.server
 app.config['suppress_callback_exceptions'] = True
 
-# Navbar
+## Navbar
 navbar = dbc.Container(
                         children=[
                     dbc.NavbarSimple(
@@ -50,10 +57,10 @@ navbar = dbc.Container(
                             fixed = "top")
                     ])
 
-#page 1 with current situation
+##dashboard page
 page_1_layout = html.Div([navbar, 
                  dbc.Container([
-                        dbc.Jumbotron( [html.H2("How to make sense of COVID-19 figures in The Netherlands?"),
+                     dbc.Jumbotron([html.H2("How to make sense of COVID-19 figures in The Netherlands?"),
                                         html.P("""
                                                Anyone following the news in the last weeks is confronted with a lot and mostly worrying figures every day: 
                                                a new number of confirmed COVID-19 cases, the daily death toll, the number of hospitalizations, number 
@@ -68,98 +75,98 @@ page_1_layout = html.Div([navbar,
                                                It is therefore updated daily at midnight to have the latest figures at hand. 
                                                """)
                                                ]),
-                                        html.H3("Question 1: Is the spread of COVID-19 slowing down?"),
-                                        html.P("""
-                                               Epidemic spread of a disease follows an exponential growth pattern. Meaning that as long as everyone that
-                                               gets the disease passes it on to more than 1 other person on, the number of newly infected people people will
-                                               grow every day and reach scarily high numbers very fast.
-                                               """),
-                                               
-                                        html.P("""
-                                               To see if measures to stop the growth are succesful, we could look at a few figures:
-                                               the number of confirmed cases, hospitalizations or death toll for example. Measurement of these figures
-                                               is distorted by the amount of tests executed in each country, even for the number of deaths. However, we can
-                                               compare the trajectory of the latter between various countries to get an idea of whether or not the
-                                               virus is still spreading exponentially or not.                                               
-                                               """),
+                     html.H3("Question 1: Is the spread of COVID-19 slowing down?"),
+                     html.P("""
+                            Epidemic spread of a disease follows an exponential growth pattern. Meaning that as long as everyone that
+                            gets the disease passes it on to more than 1 other person on, the number of newly infected people people will
+                            grow every day and reach scarily high numbers very fast.
+                            """),
+                            
+                     html.P("""
+                            To see if measures to stop the growth are succesful, we could look at a few figures:
+                            the number of confirmed cases, hospitalizations or death toll for example. Measurement of these figures
+                            is distorted by the amount of tests executed in each country, even for the number of deaths. However, we can
+                            compare the trajectory of the latter between various countries to get an idea of whether or not the
+                            virus is still spreading exponentially or not.                                               
+                            """),
 
-                                        dbc.Container(
-                                            children=[
-                                                dcc.Graph(
-                                                        id = 'deaths',
-                                                        figure = fig_deaths
-                                                        )]),
-                                        html.P("""
-                                               Figure 1 shows the growth trajectory of the number of deaths in several European countries. 
-                                               The axis are logaritmic, meaning that every major step in the axis corresponds to a 10-fold increase.
-                                               We can see here that most European countries have moved away from the scenario where
-                                               the number of deaths increases with a two-fold every day. To see more clearly how fast the number
-                                               of deaths is still growing we should look at figure 2, which shows the day-to-day growth rate of 
-                                               the new number of deaths. 
-                                               """),
-                                        dbc.Container(
-                                            children=[
-                                                dcc.Graph(
-                                                        id = 'growth',
-                                                        figure = fig_growth
-                                                        )]),
-                                        html.P("""
-                                               Figure 2 takes the average number of newly reported deaths of the past 
-                                               five days and compares it to the average calculated yesterday. If this number drops to 0 or below, the
-                                               spread of COVID-19 has been stabilized and is no longer growing exponentially. 
-                                               """),
-                                        html.H3("Question 2: Is there going to be enough IC capacity for everyone in need?"),
-                                        html.P("""
-                                               This is not an easy question to answer, as it involves forecasting the amount of
-                                               people that need ICU care. ICU capacity in the Netherlands constrainted to ultimately
-                                               2400 beds, of which 500 beds are needed for regular patients.   
-                                               """),
-                                       html.P("""    
-                                               
-                                               The RIVM provides us with new forecasts on a weekly basis, so to keep ourselves updated
-                                               in the meantime we have created a forecasting model similar to the models 
-                                               used by the RIVM, albeit a simplified version of course. 
-                                               """
-                                               ),
-                                       html.P("""
-                                               The main factor in these models is the reproduction rate (R) which corresponds to 
-                                               the amount of other people everyone with COVID-19 infects. We have estimated this
-                                               number R for two periods: (i) the ramp up period when no measures were yet taken and
-                                               (ii) the surpression period, after implementation of "intelligent lockdown" in NL. 
-                                               Figure 3 shows our estimations of the reproduction rate in these periodes as well as the rate
-                                               we need for the amount of IC patients to stay below 1900. 
-                                               """),
-                                        dbc.Row([
-                                                dbc.Col(dcc.Graph(
-                                                            id = 'R0_bar',
-                                                            ), md = 10),
-                                                dbc.Col(html.Div(children = [dcc.Slider(id = 'I1_slider',
-                                                                   vertical = True,
-                                                                   verticalHeight = 300,
-                                                                   min = 0,
-                                                                   max = 2,
-                                                                   step = 0.01,
-                                                                   value = Rtarget,
-                                                                   marks = {
-                                                                       0: 'Target = 0',
-                                                                       1: 'Target = 1',
-                                                                       2: 'Target = 2',
-                                                                       3: '3',
-                                                                       4: '4'})], style = {"marginTop": "100px"}), md = 2)]),
-                                        html.P("""
-                                               To see when a peak in ICU patients would occur, we have also modelled the development
-                                               of patients over time. Figure 4 shows the expected number of ICU patients from our model. 
-                                               Changing the above slider will show you the effect of reaching a certain average reproduction rate.
-                                               """),
-                                        dcc.Graph(
-                                                    id = 'outlook_figure',
-                                                    ),
-                                        html.P(["Number of deaths per country last updated per: ", str((date.today()-datetime.timedelta(days = 1)).strftime("%d/%m/%Y"))], style = {"fontSize":"70%"}),
-                                        html.P(["Forecast fitted to hospitalizations in NL up until: ", forecaster.hospitals.iloc[-1,0]], style = {"fontSize":"70%"})],
-                                                style = dict(marginTop= "20px",
-                                                             width = "900px"))], style = dict(marginTop= "20px"))
+                     dbc.Container(
+                         children=[
+                             dcc.Graph(
+                                     id = 'deaths',
+                                     figure = fig_deaths
+                                     )]),
+                     html.P("""
+                            Figure 1 shows the growth trajectory of the number of deaths in several European countries. 
+                            The axis are logaritmic, meaning that every major step in the axis corresponds to a 10-fold increase.
+                            We can see here that most European countries have moved away from the scenario where
+                            the number of deaths increases with a two-fold every day. To see more clearly how fast the number
+                            of deaths is still growing we should look at figure 2, which shows the day-to-day growth rate of 
+                            the new number of deaths. 
+                            """),
+                     dbc.Container(
+                         children=[
+                             dcc.Graph(
+                                     id = 'growth',
+                                     figure = fig_growth
+                                     )]),
+                     html.P("""
+                            Figure 2 takes the average number of newly reported deaths of the past 
+                            five days and compares it to the average calculated yesterday. If this number drops to 0 or below, the
+                            spread of COVID-19 has been stabilized and is no longer growing exponentially. 
+                            """),
+                     html.H3("Question 2: Is there going to be enough IC capacity for everyone in need?"),
+                     html.P("""
+                            This is not an easy question to answer, as it involves forecasting the amount of
+                            people that need ICU care. ICU capacity in the Netherlands constrainted to ultimately
+                            2400 beds, of which 500 beds are needed for regular patients.   
+                            """),
+                    html.P("""    
+                            
+                            The RIVM provides us with new forecasts on a weekly basis, so to keep ourselves updated
+                            in the meantime we have created a forecasting model similar to the models 
+                            used by the RIVM, albeit a simplified version of course. 
+                            """
+                            ),
+                    html.P("""
+                            The main factor in these models is the reproduction rate (R) which corresponds to 
+                            the amount of other people everyone with COVID-19 infects. We have estimated this
+                            number R for two periods: (i) the ramp up period when no measures were yet taken and
+                            (ii) the surpression period, after implementation of "intelligent lockdown" in NL. 
+                            Figure 3 shows our estimations of the reproduction rate in these periodes as well as the rate
+                            we need for the amount of IC patients to stay below 1900. 
+                            """),
+                     dbc.Row([
+                             dbc.Col(dcc.Graph(
+                                         id = 'R0_bar',
+                                         ), md = 10),
+                             dbc.Col(html.Div(children = [dcc.Slider(id = 'I1_slider',
+                                                vertical = True,
+                                                verticalHeight = 300,
+                                                min = 0,
+                                                max = 2,
+                                                step = 0.01,
+                                                value = Rtarget,
+                                                marks = {
+                                                    0: 'Target = 0',
+                                                    1: 'Target = 1',
+                                                    2: 'Target = 2',
+                                                    3: '3',
+                                                    4: '4'})], style = {"marginTop": "100px"}), md = 2)]),
+                     html.P("""
+                            To see when a peak in ICU patients would occur, we have also modelled the development
+                            of patients over time. Figure 4 shows the expected number of ICU patients from our model. 
+                            Changing the above slider will show you the effect of reaching a certain average reproduction rate.
+                            """),
+                     dcc.Graph(
+                                 id = 'outlook_figure',
+                                 ),
+                     html.P(["Number of deaths per country last updated per: ", str((date.today()-datetime.timedelta(days = 1)).strftime("%d/%m/%Y"))], style = {"fontSize":"70%"}),
+                     html.P(["Forecast fitted to hospitalizations in NL up until: ", forecaster.hospitals.iloc[-1,0]], style = {"fontSize":"70%"})],
+                             style = dict(marginTop= "20px",
+                                          width = "900px"))], style = dict(marginTop= "20px"))
 
-# page two with background
+## background page
 page_2_layout = html.Div([
                     navbar,
                     dbc.Container([                        
@@ -237,7 +244,7 @@ page_2_layout = html.Div([
                                     2: '2',
                                     3: '3',
                                     4: '4'}),
-                        html.P(["Incubation time"], style = {"marginTop": "10px"}),
+                        html.P(["Incubation time (days)"], style = {"marginTop": "10px"}),
                         dcc.Slider(
                                 id = 'Inc_slider',
                                 min = 0,
@@ -250,7 +257,7 @@ page_2_layout = html.Div([
                                     4: '4',
                                     6: '6',
                                     8: '8'}),
-                        html.P(["Time on IC"], style = {"marginTop": "10px"}),
+                        html.P(["Time on IC (days)"], style = {"marginTop": "10px"}),
                         dcc.Slider(
                                 id = 'IC_slider',
                                 min = 0,
@@ -267,35 +274,37 @@ page_2_layout = html.Div([
                     style = {"marginTop":"100px",
                              "width": "900px"})])
 
-# full app layout
+## build up app layout
 app.layout = html.Div(
     [dcc.Location(id = 'url', refresh = False),
      html.Div(id = 'page-content')])
 
-# interactivity is handled by callbacks. Used here to let graph interact with slider
+## interactivity is handled by callbacks. Used here to let graph interact with slider
+
+## interaction for figure 4 with slider
 @app.callback(
     Output('outlook_figure', 'figure'),
     [Input('I1_slider', 'value')])
 def update_figure1(R):    
     #TO DO: integrate most of this into forecaster class
     # get fitted model
-    solution_outlook =  forecaster.SEIR_solution(intervention = [(30,factors[0]),(len(forecaster.hospitals),factors[1]), (300,factors[1])], e0 = 20)
-    solution_target = forecaster.SEIR_solution(intervention = [(30,factors[0]),(len(forecaster.hospitals),R/2.2), (300,R/2.2)], e0 = 20)    
-    y_outlook = (solution_outlook["I_ic"]+solution_outlook["I_hosp"]+solution_outlook["R_ic"]+solution_outlook["R_hosp"]+0.5*solution_outlook["I_fatal"]+0.5*solution_outlook["R_fatal"])
-    y_actual = forecaster.hospitals.iloc[:,1]
+    solution_outlook =  forecaster.forecasts["outlook"]
+    solution_historic = forecaster.forecasts["historic"]
+    solution_target = forecaster.SEIR_solution(intervention = [(30,factors[0]),(300,R/2.2)], e0 = 20)    
 
     # create data sets for figures with outlook IC utilization and target IC utilization
     y_ic_outlook = solution_outlook["I_ic"] + solution_outlook["I_fatal"] * 0.5
     y_ic_target = solution_target["I_ic"] + solution_target["I_fatal"] * 0.5
+    y_ic_historic = solution_historic["I_ic"] + solution_historic["I_fatal"] * 0.5
     ic_cap = np.ones(len(y_ic_outlook))*1900
     x_outlook = pd.date_range(start='16/2/2020', periods=len(y_ic_outlook))
 
     # create figure
     outlook_fig = go.Figure()
+    outlook_fig.add_trace(go.Scatter(y=y_ic_historic, x= x_outlook, name = "ic capacity",
+                                     line = dict(color='orange', width=2, dash='dot')))
     outlook_fig.add_trace(go.Scatter(y=ic_cap, x= x_outlook, name = "ic capacity",
                                      line = dict(color='Lightgrey', width=2, dash='dot')))
-    outlook_fig.add_trace(go.Scatter(y=y_outlook, x= x_outlook, name = "model hospitalizations"))
-    outlook_fig.add_trace(go.Scatter(y=y_actual, x= x_outlook, name = "actual hospitalizations"))
     outlook_fig.add_trace(go.Scatter(y=y_ic_outlook, x= x_outlook, name = "IC beds at current R",
                                      line = dict(color = 'orange')))
     outlook_fig.add_trace(go.Scatter(y=y_ic_target, x= x_outlook, name = "IC beds at target R",
@@ -311,14 +320,7 @@ def update_figure1(R):
     outlook_fig.update_yaxes(showgrid=True, gridwidth=1, gridcolor='LightGrey')
     return outlook_fig 
 
-mapping = {"Patients in hospital": "Hosp_tot",
-           "Patients on IC": "IC_total",
-           "Infectious": "I_total",
-           "Deaths":"R_fatal",
-           "Recovered": "R_total",
-           "Susceptible": "Susceptible",
-           "Deaths": "R_fatal"}
-
+## interaction for figure 5 with sliders
 @app.callback(
     Output('sensitivity_figure', 'figure'),
     [Input('measure_dropdown', 'value'),
@@ -336,11 +338,14 @@ def update_figure1(measures, R, days, inc, IC):
     solution_outlook["R_total"] = solution_outlook["R_mild"] + solution_outlook["R_hosp"]  + solution_outlook["R_ic"]  
     solution_outlook["Hosp_tot"] = solution_outlook["I_ic"] + solution_outlook["I_hosp"] + solution_outlook["I_fatal"] 
     x_outlook = pd.date_range(start='16/2/2020', periods=len(solution_outlook))
+    
+    # create figure
     outlook_fig = go.Figure()
     
     for measure in measures:
         outlook_fig.add_trace(go.Scatter(y=solution_outlook[mapping[measure]], x= x_outlook, name = measure))
-        # format figure
+
+    # format figure
     outlook_fig.update_layout(
         plot_bgcolor='white',
         xaxis_title="Days",
@@ -350,14 +355,12 @@ def update_figure1(measures, R, days, inc, IC):
     outlook_fig.update_yaxes(showgrid=True, gridwidth=1, gridcolor='LightGrey')
     return outlook_fig 
 
-
-
+## interaction for figure 3 with slider
 @app.callback(
     Output('R0_bar', 'figure'),
     [Input('I1_slider', 'value')])
 def update_figure2(R):
     return forecaster.create_bar(name = "outlook", Rtarget = R)
-
 
 ## callback for switching page
 @app.callback(Output('page-content', 'children'), [Input('url', 'pathname')])

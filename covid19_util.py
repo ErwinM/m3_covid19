@@ -21,7 +21,13 @@ continent_codes = {
 }
 
 
-
+mapping = {"Patients in hospital": "Hosp_tot",
+           "Patients on IC": "IC_total",
+           "Infectious": "I_total",
+           "Deaths":"R_fatal",
+           "Recovered": "R_total",
+           "Susceptible": "Susceptible",
+           "Deaths": "R_fatal"}
 
 
         
