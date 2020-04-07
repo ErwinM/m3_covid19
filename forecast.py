@@ -19,6 +19,7 @@ class forecast_covid19:
         self.hospitals = pd.read_csv("hospitalizations.csv", sep = ";")
         self.forecasts = {}
         self.factors = {}    
+        self.results = {}
         
     def SEIR_solution(self, intervention = [(100,1), (10000, 0.2)],e0 = 0, days = 150,
                       t_inc = 5.2, t_inf = 3, t_ic = 21):
@@ -116,13 +117,14 @@ class forecast_covid19:
             outcome = self.SEIR_solution(intervention = [(cutoff,y1), (10000,y2)], e0 = 20)
             model_hosp = (outcome["I_hosp"] +outcome["I_ic"]+outcome["R_hosp"]+outcome["R_ic"]+\
                           0.5*outcome["I_fatal"]+0.5*outcome["R_fatal"]).iloc[:len(self.hospitals)]
-            return np.sqrt(np.sum((model_hosp - self.hospitals.iloc[:,1])**2))
+            return np.sqrt(np.mean((model_hosp - self.hospitals.iloc[:,1])**2))
         
         opt1 = scipy.optimize.minimize(rmse, [1.7,0.8], bounds = [(0.000001, 3), (0.000001, 3)], method = "L-BFGS-B")
         factors = opt1.x
         
         self.forecasts[name] = self.SEIR_solution(intervention = [(cutoff,factors[0]), (300,factors[1])], e0 = 20)
         self.factors[name] = factors
+        self.results[name] = opt1
 
     def determine_Rtarget(self, name = 'default'):            
         #determine Rtarget

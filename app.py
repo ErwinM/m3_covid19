@@ -281,8 +281,8 @@ def update_figure1(R):
     # get fitted model
     solution_outlook =  forecaster.SEIR_solution(intervention = [(30,factors[0]),(len(forecaster.hospitals),factors[1]), (300,factors[1])], e0 = 20)
     solution_target = forecaster.SEIR_solution(intervention = [(30,factors[0]),(len(forecaster.hospitals),R/2.2), (300,R/2.2)], e0 = 20)    
-    # y_outlook = (solution_outlook["I_ic"]+solution_outlook["I_hosp"]+solution_outlook["R_ic"]+solution_outlook["R_hosp"]+0.5*solution_outlook["I_fatal"]+0.5*solution_outlook["R_fatal"])
-    # # y_actual = hospital.iloc[:,1]
+    y_outlook = (solution_outlook["I_ic"]+solution_outlook["I_hosp"]+solution_outlook["R_ic"]+solution_outlook["R_hosp"]+0.5*solution_outlook["I_fatal"]+0.5*solution_outlook["R_fatal"])
+    y_actual = forecaster.hospitals.iloc[:,1]
 
     # create data sets for figures with outlook IC utilization and target IC utilization
     y_ic_outlook = solution_outlook["I_ic"] + solution_outlook["I_fatal"] * 0.5
@@ -294,8 +294,8 @@ def update_figure1(R):
     outlook_fig = go.Figure()
     outlook_fig.add_trace(go.Scatter(y=ic_cap, x= x_outlook, name = "ic capacity",
                                      line = dict(color='Lightgrey', width=2, dash='dot')))
-    # outlook_fig.add_trace(go.Scatter(y=y_outlook, x= x_outlook, name = "model hospitalizations"))
-    # outlook_fig.add_trace(go.Scatter(y=y_actual, x= x_outlook, name = "actual hospitalizations"))
+    outlook_fig.add_trace(go.Scatter(y=y_outlook, x= x_outlook, name = "model hospitalizations"))
+    outlook_fig.add_trace(go.Scatter(y=y_actual, x= x_outlook, name = "actual hospitalizations"))
     outlook_fig.add_trace(go.Scatter(y=y_ic_outlook, x= x_outlook, name = "IC beds at current R",
                                      line = dict(color = 'orange')))
     outlook_fig.add_trace(go.Scatter(y=y_ic_target, x= x_outlook, name = "IC beds at target R",
