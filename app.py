@@ -118,9 +118,11 @@ Based on the available data, our model estimates R for two periods:
                                                                        1: 'Target = 1',
                                                                        2: 'Target = 2',
                                                                        3: '3',
-                                                                       4: '4'})], style = {"marginTop": "100px"}), md = 2)]),
+                                                                       4: '4'})], style = {"marginTop": "100px"}), md = 2)], className="m3-graph"),
                     dcc.Markdown('''
-                    Figure 3 shows our model’s estimate of the reproduction rate during these periods. Figure 3 also includes a ‘Target R’ being the maximum value for R where we still have enough IC capacity available. Figure 4 shows our model’s projection for the corresponding IC demand. Both graphs show our estimate for today and our estimates from the last two days. Time lag plays an important role in projecting demand for IC beds. The effects of the NL measures did not have an immediate impact on hospitalisation and IC rates, because it takes xx days on average from initial infection to needing IC care and yy days before giving up the IC bed.  This means, the current numbers still include patients which were infected before the NL measures were implemented. As a result, our estimates of R and corresponding IC demand are still changing daily as the share of patients infected before the NL measures declines.
+                    Figure 3 shows our model’s estimate of the reproduction rate during these periods. Figure 3 also includes a ‘Target R’ being the maximum value for R where we still have enough IC capacity available. Figure 4 shows our model’s projection for the corresponding IC demand. Both graphs show our estimate for today and our estimates from the last two days. 
+
+                    Time lag plays an important role in projecting demand for IC beds. The effects of the NL measures did not have an immediate impact on hospitalisation and IC rates. It takes xx days on average from initial infection to needing IC care and yy days after that before the IC bed is released.  Because of this, the current numbers still include patients which were infected before the NL measures were implemented. As a result, our estimates of R and corresponding IC demand are still changing daily as the share of patients infected before the NL measures declines.
                     '''),
                     dcc.Graph(id = 'outlook_figure', className="m3-graph"),
                     dcc.Markdown('''

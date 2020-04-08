@@ -161,19 +161,21 @@ class forecast_covid19:
     def create_bar(self, Rtarget = 2):
         # create bar chart for question 2
         y1 = [self.factors["outlook"][0]*2.2]
-        barnames = ["R before measures", "R estimate 3 days ago",
-                    "R estimate yesterday", "R estimate latest", "R target"]
-        barcolors = ['red', '#e0e0e0', '#bfbfbf', '#949494', 'green']
+        barnames = ["Before measures", "2 days ago",
+                    "yesterday", "latest", "R target"]
+        barcolors = ['#E21F35', '#e0e0e0', '#bfbfbf', '#949494', 'green']
         for bar in ["3d_ago_forecast", "previous_forecast", "outlook"]:
             y1.append(self.factors[bar][1]*2.2)
         y1.append(Rtarget)
-        effective_R = go.Bar(y= y1, x = barnames, 
-                             name = "Reproduction rate (R)", marker_color = barcolors)
+        effective_R = go.Bar(y= y1, x = barnames, name = "Reproduction rate (R)", marker_color = barcolors)
         fig_bar = go.Figure(data = [effective_R])
-        fig_bar.update_layout(barmode='stack')
+        fig_bar.update_layout(barmode='stack', uniformtext=dict(mode='show'))
+        fig_bar.update_traces(text=y1, texttemplate='%{text:.2f}', textposition='outside', cliponaxis=False)
         fig_bar.update_layout(
             plot_bgcolor='white',
-            title = "Figure 3: development of effective reproduction rate (R)")       
+            margin=dict(pad=10),
+            title = dict(text="Figure 3: Estimates of effective reproduction rate (R)", 
+                font=dict(family="proxima-nova, sans-serif", size=20, color="black")))
         return fig_bar
     
     

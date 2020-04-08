@@ -13,7 +13,7 @@ import math
 import numpy as np
 from scipy.integrate import odeint
 
-
+# Style formating dictionaries
 graph_layout = {
         "height": 700,
         "width": 900,
