@@ -67,7 +67,7 @@ navbar = dbc.Container(
 ##dashboard page
 page_1_layout = html.Div([navbar, 
                  dbc.Container([
-                     dbc.Jumbotron([html.H2("How to make sense of COVID-19 figures in The Netherlands?"),
+                    dbc.Jumbotron([html.H2("How to make sense of COVID-19 figures in The Netherlands?"),
                                         html.P("""
                                                Anyone following the news in the last weeks is confronted with a lot and mostly worrying figures every day: 
                                                a new number of confirmed COVID-19 cases, the daily death toll, the number of hospitalizations, number 
@@ -82,68 +82,31 @@ page_1_layout = html.Div([navbar,
                                                It is therefore updated daily at midnight to have the latest figures at hand. 
                                                """)
                                         ],  className="m3-jumbo"),
-                                        html.H3("Question 1: Is the spread of COVID-19 slowing down?"),
-                                        html.P("""
-                                               Epidemic spread of a disease follows an exponential growth pattern. Meaning that as long as everyone that
-                                               gets the disease passes it on to more than 1 other person on, the number of newly infected people people will
-                                               grow every day and reach scarily high numbers very fast.
-                                               """, className="m3-soft"),
-                                               
-                                        html.P("""
-                                               To see if measures to stop the growth are succesful, we could look at a few figures:
-                                               the number of confirmed cases, hospitalizations or death toll for example. Measurement of these figures
-                                               is distorted by the amount of tests executed in each country, even for the number of deaths. However, we can
-                                               compare the trajectory of the latter between various countries to get an idea of whether or not the
-                                               virus is still spreading exponentially or not.                                               
-                                               """),
+                                        
+                    dcc.Markdown('''
+                        ### Question 1: Are we slowing down the spread of COVID-19 ?
+                        COVID19’s spread follows an exponential growth pattern.  Exponential growth is non-intuitive: even when the number of new cases rises daily, we could still be making progress. in slowing the spread. We use the following two graphs to determine where we stand today and to what extend our mitigating measures are slowing the spread of the virus.
+                        '''),
+                    dbc.Container(children=[dcc.Graph(id = 'deaths', figure = fig_deaths)]),
+                    dcc.Markdown('''
+                        Figure 1 shows the growth trajectory of the number of deaths in selected European countries. The y-axis is logaritmic: every major step corresponds to a 10-fold increase. The graph shows that the rise in death toll is slowing down in most European countries. However, there are big differences. The death toll is no longer doubling every 4 days in The Netherlands, Italy, Germany and Spain. In France the death toll appears to still double every 4 days and in the UK the time to double is even shorter. To better understand the rate of growth we should look at figure 2, showing the day-to-day growth of COVID19 deaths.
+                        '''),
+                    dbc.Container(children=[dcc.Graph(id = 'growth', figure = fig_growth)]),
+                    dcc.Markdown('''
+                        Figure 2 takes the average number of newly reported deaths of the past five days and compares it to the average calculated the day before.  For a country to successfully contain the spread of COVID19, this number needs to drop below 0.
+                        '''),
+                    dcc.Markdown('''### Question 2: Are we going to have an IC bed for everyone who needs it?
+This is not an easy question to answer, as it involves the future. To answer it, we need to forecast both the demand and the availability of IC care in The Netherlands. For the availability we use the latest available information: 2.400 beds will be available, of which 1.900 will be available to patients suffering from COVID19.
 
-                                        dbc.Container(
-                                            children=[
-                                                dcc.Graph(
-                                                        id = 'deaths',
-                                                        figure = fig_deaths
-                                                        )]),
-                                        html.P("""
-                                               Figure 1 shows the growth trajectory of the number of deaths in several European countries. 
-                                               The axis are logaritmic, meaning that every major step in the axis corresponds to a 10-fold increase.
-                                               We can see here that most European countries have moved away from the scenario where
-                                               the number of deaths increases with a two-fold every day. To see more clearly how fast the number
-                                               of deaths is still growing we should look at figure 2, which shows the day-to-day growth rate of 
-                                               the new number of deaths. 
-                                               """),
-                                        dbc.Container(
-                                            children=[
-                                                dcc.Graph(
-                                                        id = 'growth',
-                                                        figure = fig_growth
-                                                        )]),
-                                        html.P("""
-                                               Figure 2 takes the average number of newly reported deaths of the past 
-                                               five days and compares it to the average calculated yesterday. If this number drops to 0 or below, the
-                                               spread of COVID-19 has been stabilized and is no longer growing exponentially. 
-                                               """),
-                                        html.H3("Question 2: Is there going to be enough IC capacity for everyone in need?"),
-                                        html.P("""
-                                               This is not an easy question to answer, as it involves forecasting the amount of
-                                               people that need ICU care. ICU capacity in the Netherlands constrainted to ultimately
-                                               2400 beds, of which 500 beds are needed for regular patients.   
-                                               """),
-                                       html.P("""    
-                                               
-                                               The RIVM provides us with new forecasts on a weekly basis, so to keep ourselves updated
-                                               in the meantime we have created a forecasting model similar to the models 
-                                               used by the RIVM, albeit a simplified version of course. 
-                                               """
-                                               ),
-                                       html.P("""
-                                               The main factor in these models is the reproduction rate (R) which corresponds to 
-                                               the amount of other people everyone with COVID-19 infects. We have estimated this
-                                               number R for two periods: (i) the ramp up period when no measures were yet taken and
-                                               (ii) the surpression period, after implementation of "intelligent lockdown" in NL. 
-                                               Figure 3 shows our estimations of the reproduction rate in these periodes as well as the rate
-                                               we need for the amount of IC patients to stay below 1900. 
-                                               """),
-                                        dbc.Row([
+To forecast demand, we have created our own, simplified, forecasting model based on the SEIR model.  A key variable in this model is the reproduction rate (R) :  the number of people a person infected with COVID-19 infects.  The bulk of the measures taken in The Netherlands are aimed at lowering this reproduction rate. Lowering R means less people get infected at the same time, which means less people need IC care simultaneously: flattening the curve.
+
+To gauge the effectiveness of measures taken so far and to project their result on IC demand we follow the approach described below.
+Based on the available data, our model estimates R for two periods: 
+* (i) the initial period when measures were not yet taken and 
+* (ii) the suppression period, after the implementation of our “intelligent lockdown” . 
+                        '''),
+
+                    dbc.Row([
                                                 dbc.Col(dcc.Graph(
                                                             id = 'R0_bar',
                                                             ), md = 10),
@@ -160,53 +123,30 @@ page_1_layout = html.Div([navbar,
                                                                        2: 'Target = 2',
                                                                        3: '3',
                                                                        4: '4'})], style = {"marginTop": "100px"}), md = 2)]),
-                                        html.P("""
-                                               To see when a peak in ICU patients would occur, we have also modelled the development
-                                               of patients over time. Figure 4 shows the expected number of ICU patients from our model. 
-                                               Changing the above slider will show you the effect of reaching a certain average reproduction rate.
-                                               """),
-                                        dcc.Graph(
-                                                    id = 'outlook_figure',
-                                                    ),
-                                        html.P(["Number of deaths per country last updated per: ", str((date.today()-datetime.timedelta(days = 1)).strftime("%d/%m/%Y"))], style = {"fontSize":"70%"}),
-                                        html.P(["Forecast fitted to hospitalizations in NL up until: ", forecaster.hospitals.iloc[-1,0]], style = {"fontSize":"70%"})],
-                                                style = dict(marginTop= "20px",
-                                                             width = "900px"))], style = dict(marginTop= "120px"))
+                    dcc.Markdown('''
+                    Figure 3 shows our model’s estimate of the reproduction rate during these periods. Figure 3 also includes a ‘Target R’ being the maximum value for R where we still have enough IC capacity available. Figure 4 shows our model’s projection for the corresponding IC demand. Both graphs show our estimate for today and our estimates from the last two days. Time lag plays an important role in projecting demand for IC beds. The effects of the NL measures did not have an immediate impact on hospitalisation and IC rates, because it takes xx days on average from initial infection to needing IC care and yy days before giving up the IC bed.  This means, the current numbers still include patients which were infected before the NL measures were implemented. As a result, our estimates of R and corresponding IC demand are still changing daily as the share of patients infected before the NL measures declines.
+                    '''),
+                    dcc.Graph(id = 'outlook_figure',),
+                    
+                    dcc.Markdown('''
+                    To see the impact of different values of R for yourself, you can change the slider next to the graph above and it will show you the effects on IC demand. More interactive results and background on our model can be found on the [background page](/background).
+                            '''),
+                    html.P(["Number of deaths per country last updated per: ", str((date.today()-datetime.timedelta(days = 1)).strftime("%d/%m/%Y"))], style = {"fontSize":"70%"}),
+                    html.P(["Forecast fitted to hospitalizations in NL up until: ", forecaster.hospitals.iloc[-1,0]], style = {"fontSize":"70%"})],
+                    style = dict(marginTop= "20px", width = "900px"))], style = dict(marginTop= "120px"))
 
 ## background page
 page_2_layout = html.Div([
                     navbar,
                     dbc.Container([                        
-                        html.H3("A model to forecast the COVID-19 outbreak"),
-                        html.P(
-                            """
-                            Modelling the COVID-19 outbreak is a complex endeavour: very little is known
-                            about key factors such as the infectious period, incubation time, mortality rate
-                            and reproduction rate. Models by any party therefore carry a high amount of 
-                            uncertainty. This does not mean they should not be made though, as they do 
-                            provide insight in what direction the outbreak is progressing and are key to 
-                            supporting decision-makers in their next steps. 
-                            """),
-                        html.P([
-                            """
-                            To keep ourselves up to date on the latest forecast, we have created our own
-                            model to forecast the development of the COVID-19 outbreak. It is a so-called 
-                            compartmental model, a common approach to modelling epedemics. You can find a good
-                            description of a simple compartmental model        
-                            """, 
-                            html.A(" in this video", href = "https://www.youtube.com/watch?v=Qrp40ck3WpI", target = "_blank")]
-                            ),
-                        html.P([
-                            """
-                            If you are curious as to how we implemented the compartmental model and what parameters we used,
-                            have a look at the source code and further descriptions on our 
-                            """,
-                            html.A("Github.", href = "https://github.com/ErwinM/m3_covid19", target = "_blank")]),
-                        html.P(
-                            """
-                            To give you an idea of how the model works, Figure 5 outlines the various outcomes of the model
-                            and lets you see the impact of changing some of the key input parameters. 
-                            """),
+                        dcc.Markdown('''### A model to forecast the COVID-19 outbreak
+Modelling the COVID-19 outbreak is a complex endeavour: very little is known about key factors such as the infectious period, incubation time, mortality rate and reproduction rate. Models by any party therefore carry a high amount of uncertainty. This does not mean they should not be made though, as they do provide insight in what direction the outbreak is progressing and are key to supporting decision-makers in their next steps.
+
+To keep ourselves up to date on the latest forecast, we have created our own model to forecast the development of the COVID-19 outbreak. It is a so-called compartmental model, a common approach to modelling epidemics. You can find a good description of a simple compartmental model  [in this video](https://www.youtube.com/watch?v=Qrp40ck3WpI) 
+If you are curious as to how we implemented the compartmental model and what parameters we used, have a look at the source code and further descriptions on our  [Github.](https://github.com/ErwinM/m3_covid19) 
+
+To give you an idea of how the model works, Figure 5 outlines the various outcomes of the model and lets you see the impact of changing some of the key input parameters.
+                            '''),
                         dcc.Graph(
                                 id = 'sensitivity_figure',
                                 ),
@@ -384,7 +324,7 @@ def display_page(pathname):
 
 # serve app 
 if __name__ == '__main__':
-    app.run_server(debug = False)
+    app.run_server(debug = True)
     
 
 
