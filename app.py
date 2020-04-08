@@ -1,4 +1,5 @@
 ## import packages
+import os
 import dash
 import dash_core_components as dcc
 import dash_html_components as html
@@ -318,5 +319,10 @@ def display_page(pathname):
         return page_1_layout
 
 # serve app
+is_prod = os.environ.get('IS_HEROKU', None)
+
 if __name__ == '__main__':
-    app.run_server(debug = True)
+    if is_prod:
+        app.run_server(debug=False)
+    else:
+        app.run_server(debug=True)
