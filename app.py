@@ -67,13 +67,13 @@ page_1_layout = html.Div([navbar,
                                                The dashboard below tries to help you get a grip on these two questions as the situation evolves.
                                                It is therefore updated daily at midnight to have the latest figures at hand. 
                                                """)
-                                               ]),
+                                        ],  className="m3-jumbo"),
                                         html.H3("Question 1: Is the spread of COVID-19 slowing down?"),
                                         html.P("""
                                                Epidemic spread of a disease follows an exponential growth pattern. Meaning that as long as everyone that
                                                gets the disease passes it on to more than 1 other person on, the number of newly infected people people will
                                                grow every day and reach scarily high numbers very fast.
-                                               """),
+                                               """, className="m3-soft"),
                                                
                                         html.P("""
                                                To see if measures to stop the growth are succesful, we could look at a few figures:
@@ -157,7 +157,7 @@ page_1_layout = html.Div([navbar,
                                         html.P(["Number of deaths per country last updated per: ", str((date.today()-datetime.timedelta(days = 1)).strftime("%d/%m/%Y"))], style = {"fontSize":"70%"}),
                                         html.P(["Forecast fitted to hospitalizations in NL up until: ", forecaster.hospitals.iloc[-1,0]], style = {"fontSize":"70%"})],
                                                 style = dict(marginTop= "20px",
-                                                             width = "900px"))], style = dict(marginTop= "20px"))
+                                                             width = "900px"))], style = dict(marginTop= "120px"))
 
 # page two with background
 page_2_layout = html.Div([
@@ -371,7 +371,7 @@ def display_page(pathname):
 
 # serve app 
 if __name__ == '__main__':
-    app.run_server(debug = False)
+    app.run_server(debug = True)
     
 
 

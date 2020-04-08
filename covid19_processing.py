@@ -48,7 +48,6 @@ class Covid19Processing:
             url = base_url + data_urls[metric]  # Combine URL parts
             r = requests.get(url)  # Retrieve from URL
             self.dataframes[metric] = pd.read_csv(StringIO(r.text), sep=",")  # Convert into Pandas dataframe
-            
 
     def process(self, rows=20, debug=False):
         # Clean up
@@ -174,8 +173,26 @@ class Covid19Processing:
                 else:
                     y_country = y_country[y_country[country] > 1]
                 y_country = np.array(y_country[country].values.tolist())
+                #y_country = y_country[:len(y_country)-30]
+                #lst[:len(lst)-n]
                 if country == "Netherlands" :
                     fig.add_trace(go.Scatter(y=y_country, name = country, line = dict(width = 6)))
+                    fig.add_annotation(
+                            x=29,
+                            y=3.27,
+                            xref="x",
+                            yref="y",
+                            yshift=20,
+                            xanchor="left",
+                            text="Netherlands",
+                            showarrow=False,
+                            font=dict(
+                                family="Courier New, monospace",
+                                size=16,
+                                color="Darkgrey"
+                                ),
+                            align="left"
+                    )
                 else:
                     fig.add_trace(go.Scatter(y=y_country, name = country))
             except:
@@ -192,12 +209,39 @@ class Covid19Processing:
                                  line = dict(color='Darkgrey', width=2, dash='dot')))                                     
         fig.add_trace(go.Scatter(y=double4, name = "Doubling every 4 days",
                                  line = dict(color='Grey', width=2, dash='dot')))     
+        fig.add_annotation(
+                x=14,
+                y=4.21,
+                xref="x",
+                yref="y",
+                yshift=20,
+                xanchor="left",
+                text="Doubling every day",
+                showarrow=False,
+                font=dict(
+                    family="Courier New, monospace",
+                    size=16,
+                    color="Darkgrey"
+                    ),
+                align="left"
+                )
         fig.update_traces(mode='lines')
+
         fig.update_layout(
             plot_bgcolor='white',
             xaxis_title="Days",
             yaxis_type = "log",
-            title = "Figure 1: total amount of deaths since the day of the first death")           
+            title = "Figure 1: total amount of deaths since the day of the first death",
+            height=600,
+            width=800,
+            showlegend=False,
+            margin=dict(
+                l=60,
+                r=10,
+                b=0,
+                t=10,
+                pad=4
+                ))
         fig.update_xaxes(showgrid=True, gridwidth=1, gridcolor='LightGrey')
         fig.update_yaxes(showgrid=True, gridwidth=1, gridcolor='LightGrey')
         return fig
