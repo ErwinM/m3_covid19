@@ -5,37 +5,51 @@ import dash_html_components as html
 import plotly.graph_objs as go
 import pandas as pd
 import dash_bootstrap_components as dbc
-import pandas
 from covid19_util import *
 from covid19_processing import *
 from dash.dependencies import Input, Output
 import forecast
 from datetime import date
 
+##create static figures for question 1
 
-#create static figures for question 1
+
+# get data from JHU
 data = Covid19Processing()
 data.process(rows=20, debug=False)
+
+# plot deaths and daily growth rate
 countries_to_plot = ["Netherlands", "Italy", "Germany", "France", "Spain",
                      "Belgium", "United Kingdom", "China"]
 fig_deaths = data.create_growth_figures("deaths",countries_to_plot)
-fig_confirmed = data.create_growth_figures("confirmed",countries_to_plot)
 fig_growth = data.create_factor_figure(countries_to_plot)
 
+## create static figures for question 2
 
-# create static figures for question 2
+# fit model to hospitalizations
 forecaster = forecast.forecast_covid19()
 forecaster.fit_REIS(cutoff= 30, name = "outlook")
+forecaster.fit_REIS(cutoff= 30, name = "previous_forecast", days_back = 1)
+forecaster.fit_REIS(cutoff= 30, name = "3d_ago_forecast", days_back = 3)
+
+
+# get betas from fitted model
 factors = forecaster.factors["outlook"]
+
+# get target R to stay below 1900 IC beds
 Rtarget = forecaster.determine_Rtarget(name = "outlook")
-    
+   
+# set dates
+yesterday = str((date.today()-datetime.timedelta(days = 1)).strftime("%d/%m/%Y"))
+forecast_day = forecaster.hospitals.iloc[-1,0]
+ 
 # App definition and authorisation
 app = dash.Dash(__name__,
                 external_stylesheets = [dbc.themes.BOOTSTRAP])
 server = app.server
 app.config['suppress_callback_exceptions'] = True
 
-# Navbar
+## Navbar
 navbar = dbc.Container(
                         children=[
                     dbc.NavbarSimple(
@@ -50,10 +64,10 @@ navbar = dbc.Container(
                             fixed = "top")
                     ])
 
-#page 1 with current situation
+##dashboard page
 page_1_layout = html.Div([navbar, 
                  dbc.Container([
-                        dbc.Jumbotron( [html.H2("How to make sense of COVID-19 figures in The Netherlands?"),
+                     dbc.Jumbotron([html.H2("How to make sense of COVID-19 figures in The Netherlands?"),
                                         html.P("""
                                                Anyone following the news in the last weeks is confronted with a lot and mostly worrying figures every day: 
                                                a new number of confirmed COVID-19 cases, the daily death toll, the number of hospitalizations, number 
@@ -159,7 +173,7 @@ page_1_layout = html.Div([navbar,
                                                 style = dict(marginTop= "20px",
                                                              width = "900px"))], style = dict(marginTop= "120px"))
 
-# page two with background
+## background page
 page_2_layout = html.Div([
                     navbar,
                     dbc.Container([                        
@@ -237,7 +251,7 @@ page_2_layout = html.Div([
                                     2: '2',
                                     3: '3',
                                     4: '4'}),
-                        html.P(["Incubation time"], style = {"marginTop": "10px"}),
+                        html.P(["Incubation time (days)"], style = {"marginTop": "10px"}),
                         dcc.Slider(
                                 id = 'Inc_slider',
                                 min = 0,
@@ -250,7 +264,7 @@ page_2_layout = html.Div([
                                     4: '4',
                                     6: '6',
                                     8: '8'}),
-                        html.P(["Time on IC"], style = {"marginTop": "10px"}),
+                        html.P(["Time on IC (days)"], style = {"marginTop": "10px"}),
                         dcc.Slider(
                                 id = 'IC_slider',
                                 min = 0,
@@ -267,39 +281,43 @@ page_2_layout = html.Div([
                     style = {"marginTop":"100px",
                              "width": "900px"})])
 
-# full app layout
+## build up app layout
 app.layout = html.Div(
     [dcc.Location(id = 'url', refresh = False),
      html.Div(id = 'page-content')])
 
-# interactivity is handled by callbacks. Used here to let graph interact with slider
+## interaction for figure 4 with slider
 @app.callback(
     Output('outlook_figure', 'figure'),
     [Input('I1_slider', 'value')])
 def update_figure1(R):    
     #TO DO: integrate most of this into forecaster class
     # get fitted model
-    solution_outlook =  forecaster.SEIR_solution(intervention = [(30,factors[0]),(len(forecaster.hospitals),factors[1]), (300,factors[1])], e0 = 20)
-    solution_target = forecaster.SEIR_solution(intervention = [(30,factors[0]),(len(forecaster.hospitals),R/2.2), (300,R/2.2)], e0 = 20)    
-    # y_outlook = (solution_outlook["I_ic"]+solution_outlook["I_hosp"]+solution_outlook["R_ic"]+solution_outlook["R_hosp"]+0.5*solution_outlook["I_fatal"]+0.5*solution_outlook["R_fatal"])
-    # # y_actual = hospital.iloc[:,1]
+    solution_outlook =  forecaster.forecasts["outlook"]
+    solution_prev = forecaster.forecasts["previous_forecast"]
+    solution_3d = forecaster.forecasts["3d_ago_forecast"]
+    solution_target = forecaster.SEIR_solution(intervention = [(30,factors[0]),(300,R/2.2)])    
 
     # create data sets for figures with outlook IC utilization and target IC utilization
     y_ic_outlook = solution_outlook["I_ic"] + solution_outlook["I_fatal"] * 0.5
     y_ic_target = solution_target["I_ic"] + solution_target["I_fatal"] * 0.5
+    y_ic_previous = solution_prev["I_ic"] + solution_prev["I_fatal"] * 0.5
+    y_ic_3d = solution_3d["I_ic"] + solution_3d["I_fatal"] * 0.5
     ic_cap = np.ones(len(y_ic_outlook))*1900
     x_outlook = pd.date_range(start='16/2/2020', periods=len(y_ic_outlook))
 
     # create figure
     outlook_fig = go.Figure()
-    outlook_fig.add_trace(go.Scatter(y=ic_cap, x= x_outlook, name = "ic capacity",
+    outlook_fig.add_trace(go.Scatter(y=y_ic_3d, x= x_outlook, name = "Forecast 3 days ago",
                                      line = dict(color='Lightgrey', width=2, dash='dot')))
-    # outlook_fig.add_trace(go.Scatter(y=y_outlook, x= x_outlook, name = "model hospitalizations"))
-    # outlook_fig.add_trace(go.Scatter(y=y_actual, x= x_outlook, name = "actual hospitalizations"))
-    outlook_fig.add_trace(go.Scatter(y=y_ic_outlook, x= x_outlook, name = "IC beds at current R",
-                                     line = dict(color = 'orange')))
-    outlook_fig.add_trace(go.Scatter(y=y_ic_target, x= x_outlook, name = "IC beds at target R",
+    outlook_fig.add_trace(go.Scatter(y=y_ic_previous, x= x_outlook, name = "Forecast yesterday",
+                                     line = dict(color='grey', width=2, dash='dot')))
+    outlook_fig.add_trace(go.Scatter(y=y_ic_outlook, x= x_outlook, name = "Latest forecast",
+                                     line = dict(color = 'grey')))
+    outlook_fig.add_trace(go.Scatter(y=y_ic_target, x= x_outlook, name = "Target",
                                      line = dict(color = 'green')))
+    outlook_fig.add_trace(go.Scatter(y=ic_cap, x= x_outlook, name = "ic capacity",
+                                 line = dict(color='lightblue', width=2)))
 
     # format figure
     outlook_fig.update_layout(
@@ -311,14 +329,7 @@ def update_figure1(R):
     outlook_fig.update_yaxes(showgrid=True, gridwidth=1, gridcolor='LightGrey')
     return outlook_fig 
 
-mapping = {"Patients in hospital": "Hosp_tot",
-           "Patients on IC": "IC_total",
-           "Infectious": "I_total",
-           "Deaths":"R_fatal",
-           "Recovered": "R_total",
-           "Susceptible": "Susceptible",
-           "Deaths": "R_fatal"}
-
+## interaction for figure 5 with sliders
 @app.callback(
     Output('sensitivity_figure', 'figure'),
     [Input('measure_dropdown', 'value'),
@@ -329,18 +340,22 @@ mapping = {"Patients in hospital": "Hosp_tot",
      ])
 def update_figure1(measures, R, days, inc, IC):    
     #TO DO: integrate most of this into forecaster class
+    
     # get fitted model
     solution_outlook =  forecaster.SEIR_solution(intervention = [(30,factors[0]),(len(forecaster.hospitals),R/2.2), (10000,R/2.2)],
-                                                 e0 = 20, days = days, t_inc = inc, t_ic = IC)
+                                                 days = days, t_inc = inc, t_ic = IC)
     solution_outlook["IC_total"] = solution_outlook["I_ic"] + solution_outlook["I_fatal"] * 0.5
     solution_outlook["R_total"] = solution_outlook["R_mild"] + solution_outlook["R_hosp"]  + solution_outlook["R_ic"]  
     solution_outlook["Hosp_tot"] = solution_outlook["I_ic"] + solution_outlook["I_hosp"] + solution_outlook["I_fatal"] 
     x_outlook = pd.date_range(start='16/2/2020', periods=len(solution_outlook))
+    
+    # create figure
     outlook_fig = go.Figure()
     
     for measure in measures:
         outlook_fig.add_trace(go.Scatter(y=solution_outlook[mapping[measure]], x= x_outlook, name = measure))
-        # format figure
+
+    # format figure
     outlook_fig.update_layout(
         plot_bgcolor='white',
         xaxis_title="Days",
@@ -350,14 +365,12 @@ def update_figure1(measures, R, days, inc, IC):
     outlook_fig.update_yaxes(showgrid=True, gridwidth=1, gridcolor='LightGrey')
     return outlook_fig 
 
-
-
+## interaction for figure 3 with slider
 @app.callback(
     Output('R0_bar', 'figure'),
     [Input('I1_slider', 'value')])
 def update_figure2(R):
-    return forecaster.create_bar(name = "outlook", Rtarget = R)
-
+    return forecaster.create_bar(Rtarget = R)
 
 ## callback for switching page
 @app.callback(Output('page-content', 'children'), [Input('url', 'pathname')])
@@ -373,5 +386,6 @@ def display_page(pathname):
 if __name__ == '__main__':
     app.run_server(debug = True)
     
+
 
 

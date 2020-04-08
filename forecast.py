@@ -13,15 +13,18 @@ from scipy.integrate import odeint
 import bisect
 import scipy
 import plotly.graph_objs as go
+import covid19_util as util 
 
 class forecast_covid19:
     def __init__(self):
         self.hospitals = pd.read_csv("hospitalizations.csv", sep = ";")
         self.forecasts = {}
         self.factors = {}    
+        self.results = {}
+        self.MAX_RANGE = 100000
         
-    def SEIR_solution(self, intervention = [(100,1), (10000, 0.2)],e0 = 0, days = 150,
-                      t_inc = 5.2, t_inf = 3, t_ic = 21):
+    def SEIR_solution(self, intervention = [(100,1), (100000, 0.2)],e0 = 20, 
+                      days = 100, t_inc = 5.2, t_inf = 3, t_ic = 21):
         # INPUT PARAMETERS
         N = 17000000
         i0 = 1
@@ -109,20 +112,38 @@ class forecast_covid19:
         df['day'] = t_span
         return df
     
-    def fit_REIS(self, cutoff = 30, name = 'default'):
+    def fit_REIS(self, cutoff = 30, name = 'default', days_back = 0):
+
+        # filter hostpitals
+        hospital_hist = self.hospitals.iloc[0:len(self.hospitals)-days_back,:]
+
+        #parameters
+        factor_lbound = 0.000001 #lower bound for factor on R
+        factor_ubound = 3 #upper bound for factor on R
         
+        # use root mean squared error as loss function 
         def rmse(factors):
             y1,y2 = factors
-            outcome = self.SEIR_solution(intervention = [(cutoff,y1), (10000,y2)], e0 = 20)
+            outcome = self.SEIR_solution(intervention = 
+                                         [(cutoff,y1), 
+                                          (self.MAX_RANGE,y2)])
             model_hosp = (outcome["I_hosp"] +outcome["I_ic"]+outcome["R_hosp"]+outcome["R_ic"]+\
                           0.5*outcome["I_fatal"]+0.5*outcome["R_fatal"]).iloc[:len(self.hospitals)]
-            return np.sqrt(np.sum((model_hosp - self.hospitals.iloc[:,1])**2))
+            return np.sqrt(np.mean((model_hosp - hospital_hist.iloc[:,1])**2))
         
-        opt1 = scipy.optimize.minimize(rmse, [1.7,0.8], bounds = [(0.000001, 3), (0.000001, 3)], method = "L-BFGS-B")
+        # minimize loss function
+        opt1 = scipy.optimize.minimize(rmse, [1.7,0.8], 
+                                       bounds = [(factor_lbound, factor_ubound),
+                                                 (factor_lbound, factor_ubound)], 
+                                       method = "L-BFGS-B")
         factors = opt1.x
         
-        self.forecasts[name] = self.SEIR_solution(intervention = [(cutoff,factors[0]), (300,factors[1])], e0 = 20)
+        # store forecast        
+        self.forecasts[name] = self.SEIR_solution(intervention = 
+                                                  [(cutoff,factors[0]), 
+                                                   (self.MAX_RANGE,factors[1])])
         self.factors[name] = factors
+        self.results[name] = opt1
 
     def determine_Rtarget(self, name = 'default'):            
         #determine Rtarget
@@ -131,18 +152,23 @@ class forecast_covid19:
         
         while maximum > 1900:
             Rtarget = Rtarget - 0.01
-            solution =  self.SEIR_solution(intervention = [(30,self.factors[name][0]),(len(self.hospitals),Rtarget/2.2), (10000,Rtarget/2.2)], e0 = 20)
+            solution =  self.SEIR_solution(intervention = [(30,self.factors[name][0]),
+                                                           (self.MAX_RANGE,Rtarget/2.2)])
             IC = solution["I_ic"] + 0.5 * solution["I_fatal"]
             maximum = IC.max()
         return Rtarget
         
-    def create_bar(self, name = "default", Rtarget = 2):
+    def create_bar(self, Rtarget = 2):
         # create bar chart for question 2
-        Rinitial = self.factors[name][0] * 2.2
-        Ractual = self.factors[name][1] * 2.2
-        barnames = ["R before measures", "R after measures", "Target R"]
-        barcolors = ['red', 'orange', 'green']
-        effective_R = go.Bar(y= [Rinitial, Ractual, Rtarget], x = barnames, name = "Reproduction rate (R)", marker_color = barcolors)
+        y1 = [self.factors["outlook"][0]*2.2]
+        barnames = ["R before measures", "R estimate 3 days ago",
+                    "R estimate yesterday", "R estimate latest", "R target"]
+        barcolors = ['red', 'grey', 'grey', 'grey', 'green']
+        for bar in ["3d_ago_forecast", "previous_forecast", "outlook"]:
+            y1.append(self.factors[bar][1]*2.2)
+        y1.append(Rtarget)
+        effective_R = go.Bar(y= y1, x = barnames, 
+                             name = "Reproduction rate (R)", marker_color = barcolors)
         fig_bar = go.Figure(data = [effective_R])
         fig_bar.update_layout(barmode='stack')
         fig_bar.update_layout(
