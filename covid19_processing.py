@@ -253,7 +253,7 @@ class Covid19Processing:
             graph_layout,
             plot_bgcolor='white',
             xaxis_title="Days",
-            title = dict(text="Figure 2: average growth (5 days) of new number of deaths", font=title_font)
+            title = dict(text="Figure 2: 5-day average growth of fatalities", font=title_font)
         )
         fig.update_xaxes(showgrid=True, gridwidth=1, gridcolor='LightGrey')
         fig.update_yaxes(showgrid=True, gridwidth=1, gridcolor='LightGrey', tickformat= ',.0%')
