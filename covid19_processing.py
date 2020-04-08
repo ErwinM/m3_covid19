@@ -24,7 +24,7 @@ annotation_layout = {
         "xref":"x",
         "yref":"y",
         "yshift":20,
-        "xanchor":"left",
+        "xanchor":"center",
         "showarrow":False,
         "font": dict(family="Courier New, monospace", size=16, color="Darkgrey"),
         "align":"left"
@@ -208,15 +208,15 @@ class Covid19Processing:
         for x in range(1,30): double2.append(double2[x-1]*np.sqrt(2))
         double4 = [1]
         for x in range(1,45): double4.append(double4[x-1]*np.sqrt(np.sqrt(2)))
-        fig.add_trace(go.Scatter(y=double, name = "x2 per day",
+        fig.add_trace(go.Scatter(y=double, name = "doubles per day",
                                  line = dict(color='Lightgrey', width=2, dash='dot'), showlegend=False))          
-        fig.add_trace(go.Scatter(y=double2, name = "x2 per 2 days",
+        fig.add_trace(go.Scatter(y=double2, name = "doubles per 2 days",
                                  line = dict(color='Darkgrey', width=2, dash='dot'), showlegend=False))                                     
-        fig.add_trace(go.Scatter(y=double4, name = "x2 per 4 days",
+        fig.add_trace(go.Scatter(y=double4, name = "doubles per 4 days",
                                  line = dict(color='Grey', width=2, dash='dot'), showlegend=False))     
-        fig.add_annotation(annotation_layout, x=14, y=4.21, text="x2 per day")
-        fig.add_annotation(annotation_layout, x=29, y=4.36, text="x2 per 2 days")
-        fig.add_annotation(annotation_layout, x=42, y=3.16, text="x2 per 3 days")
+        fig.add_annotation(annotation_layout, x=14, y=4.21, text="doubles per day")
+        fig.add_annotation(annotation_layout, x=29, y=4.36, text="doubles per 2 days")
+        fig.add_annotation(annotation_layout, x=42, y=3.16, text="doubles per 3 days")
 
         fig.update_traces(mode='lines')
 
