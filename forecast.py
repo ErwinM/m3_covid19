@@ -163,7 +163,7 @@ class forecast_covid19:
         y1 = [self.factors["outlook"][0]*2.2]
         barnames = ["R before measures", "R estimate 3 days ago",
                     "R estimate yesterday", "R estimate latest", "R target"]
-        barcolors = ['red', 'grey', 'grey', 'grey', 'green']
+        barcolors = ['red', '#e0e0e0', '#bfbfbf', '#949494', 'green']
         for bar in ["3d_ago_forecast", "previous_forecast", "outlook"]:
             y1.append(self.factors[bar][1]*2.2)
         y1.append(Rtarget)

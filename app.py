@@ -309,15 +309,15 @@ def update_figure1(R):
     # create figure
     outlook_fig = go.Figure()
     outlook_fig.add_trace(go.Scatter(y=y_ic_3d, x= x_outlook, name = "Forecast 3 days ago",
-                                     line = dict(color='Lightgrey', width=2, dash='dot')))
+                                     line = dict(color='#e0e0e0', width=2)))
     outlook_fig.add_trace(go.Scatter(y=y_ic_previous, x= x_outlook, name = "Forecast yesterday",
-                                     line = dict(color='grey', width=2, dash='dot')))
+                                     line = dict(color='#bfbfbf', width=2)))
     outlook_fig.add_trace(go.Scatter(y=y_ic_outlook, x= x_outlook, name = "Latest forecast",
-                                     line = dict(color = 'grey')))
+                                     line = dict(color = '#949494')))
     outlook_fig.add_trace(go.Scatter(y=y_ic_target, x= x_outlook, name = "Target",
                                      line = dict(color = 'green')))
     outlook_fig.add_trace(go.Scatter(y=ic_cap, x= x_outlook, name = "ic capacity",
-                                 line = dict(color='lightblue', width=2)))
+                                 line = dict(color='red', width=2, dash = 'dot')))
 
     # format figure
     outlook_fig.update_layout(
