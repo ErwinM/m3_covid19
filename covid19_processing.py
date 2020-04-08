@@ -173,8 +173,8 @@ class Covid19Processing:
                 else:
                     y_country = y_country[y_country[country] > 1]
                 y_country = np.array(y_country[country].values.tolist())
-                #y_country = y_country[:len(y_country)-30]
-                #lst[:len(lst)-n]
+                if country == "China":    
+                    y_country = y_country[:len(y_country)-30]
                 if country == "Netherlands" :
                     fig.add_trace(go.Scatter(y=y_country, name = country, line = dict(width = 6)))
                     fig.add_annotation(
@@ -256,6 +256,8 @@ class Covid19Processing:
                 df = df[df["confirmed_deaths"]>1]
                 y_country = df["filtered_growth_factor"].values-1
                 y_country = y_country[4:]
+                if country == "China":    
+                    y_country = y_country[:len(y_country)-30]
                 if country == "Netherlands":
                     fig.add_trace(go.Scatter(y=y_country, name = country, line = dict(width = 6)))
                 else:
