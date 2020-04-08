@@ -175,7 +175,7 @@ class forecast_covid19:
             plot_bgcolor='white',
             margin=dict(pad=10),
             title = dict(text="Figure 3: Estimates of effective reproduction rate (R)", 
-                font=dict(family="proxima-nova, sans-serif", size=20, color="black")))
+                font=dict(family="Courier New, monospace", size=20, color="#24292e")))
         return fig_bar
     
     

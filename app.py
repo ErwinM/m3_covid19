@@ -120,14 +120,14 @@ Based on the available data, our model estimates R for two periods:
                                                                        3: '3',
                                                                        4: '4'})], style = {"marginTop": "100px"}), md = 2)], className="m3-graph"),
                     dcc.Markdown('''
-                    Figure 3 shows our model’s estimate of the reproduction rate during these periods. Figure 3 also includes a ‘Target R’ being the maximum value for R where we still have enough IC capacity available. Figure 4 shows our model’s projection for the corresponding IC demand. Both graphs show our estimate for today and our estimates from the last two days. 
-
-                    Time lag plays an important role in projecting demand for IC beds. The effects of the NL measures did not have an immediate impact on hospitalisation and IC rates. It takes xx days on average from initial infection to needing IC care and yy days after that before the IC bed is released.  Because of this, the current numbers still include patients which were infected before the NL measures were implemented. As a result, our estimates of R and corresponding IC demand are still changing daily as the share of patients infected before the NL measures declines.
+                    Figure 3 shows our model’s estimate of the reproduction rate during these periods. Figure 3 also includes a ‘Target R’ being the maximum value for R where we still have enough IC capacity available. Figure 4 shows our model’s projection for the corresponding IC demand. Both graphs show our estimate for today and our estimates from the last two days.
                     '''),
                     dcc.Graph(id = 'outlook_figure', className="m3-graph"),
                     dcc.Markdown('''
+                    Time lag plays an important role in projecting demand for IC beds. The effects of the NL measures did not have an immediate impact on hospitalisation and IC rates. It takes xx days on average from initial infection to needing IC care and yy days after that before the IC bed is released.  Because of this, the current numbers still include patients which were infected before the NL measures were implemented. As a result, our estimates of R and corresponding IC demand are still changing daily as the share of patients infected before the NL measures declines.
+                    
                     To see the impact of different values of R for yourself, you can change the slider next to the graph above and it will show you the effects on IC demand. More interactive results and background on our model can be found on the [background page](/background).
-                            '''),
+                    '''),
                     html.P(["Number of deaths per country last updated per: ", str((date.today()-datetime.timedelta(days = 1)).strftime("%d/%m/%Y"))], className="m3-footnote"),
                     html.P(["Forecast fitted to hospitalizations in NL up until: ", forecaster.hospitals.iloc[-1,0]], className="m3-footnote")],
                     style = dict(marginTop= "20px", width = "900px"))], style = dict(marginTop= "120px"))
@@ -319,4 +319,4 @@ def display_page(pathname):
 
 # serve app
 if __name__ == '__main__':
-    app.run_server(debug = False)
+    app.run_server(debug = True)

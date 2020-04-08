@@ -31,9 +31,9 @@ annotation_layout = {
         }
 
 title_font = {
-        "family": "proxima-nova, sans-serif",
+        "family": "Courier New, monospace",
         "size": 20,
-        "color": "black"
+        "color": "#24292e"
         }
 
 class Covid19Processing:
@@ -259,7 +259,3 @@ class Covid19Processing:
         fig.update_yaxes(showgrid=True, gridwidth=1, gridcolor='LightGrey', tickformat= ',.0%')
         fig.update_traces(mode='lines')
         return fig
-
-
-        
- 
