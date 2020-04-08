@@ -38,18 +38,18 @@ factors = forecaster.factors["outlook"]
 
 # get target R to stay below 1900 IC beds
 Rtarget = forecaster.determine_Rtarget(name = "outlook")
-   
+
 # set dates
 yesterday = str((date.today()-datetime.timedelta(days = 1)).strftime("%d/%m/%Y"))
 forecast_day = forecaster.hospitals.iloc[-1,0]
- 
+
 # App definition and authorisation
 app = dash.Dash(__name__,
                 external_stylesheets = [dbc.themes.BOOTSTRAP])
 server = app.server
 app.config['suppress_callback_exceptions'] = True
 
-## Navbar
+# Navbar
 navbar = dbc.Container(
                         children=[
                     dbc.NavbarSimple(
@@ -57,8 +57,8 @@ navbar = dbc.Container(
                                 dbc.NavLink("Dashboard", href="/dashboard", id = "dasbhoard-link"),
                                 dbc.NavLink("Background", href="/background", id = "background-link")],
                             brand = "M3 Consultancy | COVID dashboard",
-                            brand_href="/dashboard",
-                            color="#E21F35",
+                            brand_href="http://m3consultancy.nl",
+                            color="#24292e",
                             dark=True,
                             # fluid = True,
                             fixed = "top")
@@ -67,38 +67,34 @@ navbar = dbc.Container(
 ##dashboard page
 page_1_layout = html.Div([navbar, 
                  dbc.Container([
-                    dbc.Jumbotron([html.H2("How to make sense of COVID-19 figures in The Netherlands?"),
-                                        html.P("""
-                                               Anyone following the news in the last weeks is confronted with a lot and mostly worrying figures every day: 
-                                               a new number of confirmed COVID-19 cases, the daily death toll, the number of hospitalizations, number 
-                                               of IC patients, the number of recoveries, number of positive tests and much more. We ourselves got 
-                                               a bit flustered by all the data presented to us on a daily basis and decided to create just a couple 
-                                               of graphs to keep track of the situation, with two major questions in mind:  
-                                               """),
-                                        html.Ul([html.P("1.  Is the spread of COVID-19 slowing down?"),
-                                                 html.P("2.  Is there going to be enough IC capacity to help everyone in need?")]),
-                                        html.P("""
-                                               The dashboard below tries to help you get a grip on these two questions as the situation evolves.
-                                               It is therefore updated daily at midnight to have the latest figures at hand. 
-                                               """)
-                                        ],  className="m3-jumbo"),
-                                        
+                    dbc.Jumbotron([
+                        dcc.Markdown('''
+                            ## COVID19 in NL: how are we doing?
+                            Like most, we follow the news on Corona daily. We are bombarded with numbers on deaths, hospitalisations and projections on the availability of IC beds. However, to us, the torrent of daily numbers lack context. Without this context it is hard to make sense of it all. Specifically, we fail to find the answer to our two main questions:
+
+                            1. Are we slowing down the spread of COVID-19 ?
+                            
+                            2. Will we have enough IC beds?
+                           
+                            Our dashboard below tries to provide answers to these two questions based on the latest data available. **This dashboard is updated every day at midnight**.
+                            ''')],
+                        className="m3-jumbo"),
                     dcc.Markdown('''
                         ### Question 1: Are we slowing down the spread of COVID-19 ?
                         COVID19’s spread follows an exponential growth pattern.  Exponential growth is non-intuitive: even when the number of new cases rises daily, we could still be making progress. in slowing the spread. We use the following two graphs to determine where we stand today and to what extend our mitigating measures are slowing the spread of the virus.
                         '''),
-                    dbc.Container(children=[dcc.Graph(id = 'deaths', figure = fig_deaths)]),
+                    dbc.Container(children=[dcc.Graph(id = 'deaths', figure = fig_deaths)], className="m3-graph"),
                     dcc.Markdown('''
                         Figure 1 shows the growth trajectory of the number of deaths in selected European countries. The y-axis is logaritmic: every major step corresponds to a 10-fold increase. The graph shows that the rise in death toll is slowing down in most European countries. However, there are big differences. The death toll is no longer doubling every 4 days in The Netherlands, Italy, Germany and Spain. In France the death toll appears to still double every 4 days and in the UK the time to double is even shorter. To better understand the rate of growth we should look at figure 2, showing the day-to-day growth of COVID19 deaths.
                         '''),
-                    dbc.Container(children=[dcc.Graph(id = 'growth', figure = fig_growth)]),
+                    dbc.Container(children=[dcc.Graph(id = 'growth', figure = fig_growth)], className="m3-graph"),
                     dcc.Markdown('''
                         Figure 2 takes the average number of newly reported deaths of the past five days and compares it to the average calculated the day before.  For a country to successfully contain the spread of COVID19, this number needs to drop below 0.
                         '''),
-                    dcc.Markdown('''### Question 2: Are we going to have an IC bed for everyone who needs it?
+                    dcc.Markdown('''### Question 2: Will we have enough IC beds?
 This is not an easy question to answer, as it involves the future. To answer it, we need to forecast both the demand and the availability of IC care in The Netherlands. For the availability we use the latest available information: 2.400 beds will be available, of which 1.900 will be available to patients suffering from COVID19.
 
-To forecast demand, we have created our own, simplified, forecasting model based on the SEIR model.  A key variable in this model is the reproduction rate (R) :  the number of people a person infected with COVID-19 infects.  The bulk of the measures taken in The Netherlands are aimed at lowering this reproduction rate. Lowering R means less people get infected at the same time, which means less people need IC care simultaneously: flattening the curve.
+To forecast demand, we have created our own, simplified, forecasting model based on the [SEIR model](https://en.wikipedia.org/wiki/Compartmental_models_in_epidemiology#The_SEIR_model).  A key variable in this model is the reproduction rate (R) :  the number of people a person infected with COVID-19 infects.  The bulk of the measures taken in The Netherlands are aimed at lowering this reproduction rate. Lowering R means less people get infected at the same time, which means less people need IC care simultaneously: flattening the curve.
 
 To gauge the effectiveness of measures taken so far and to project their result on IC demand we follow the approach described below.
 Based on the available data, our model estimates R for two periods: 
@@ -126,13 +122,12 @@ Based on the available data, our model estimates R for two periods:
                     dcc.Markdown('''
                     Figure 3 shows our model’s estimate of the reproduction rate during these periods. Figure 3 also includes a ‘Target R’ being the maximum value for R where we still have enough IC capacity available. Figure 4 shows our model’s projection for the corresponding IC demand. Both graphs show our estimate for today and our estimates from the last two days. Time lag plays an important role in projecting demand for IC beds. The effects of the NL measures did not have an immediate impact on hospitalisation and IC rates, because it takes xx days on average from initial infection to needing IC care and yy days before giving up the IC bed.  This means, the current numbers still include patients which were infected before the NL measures were implemented. As a result, our estimates of R and corresponding IC demand are still changing daily as the share of patients infected before the NL measures declines.
                     '''),
-                    dcc.Graph(id = 'outlook_figure',),
-                    
+                    dcc.Graph(id = 'outlook_figure', className="m3-graph"),
                     dcc.Markdown('''
                     To see the impact of different values of R for yourself, you can change the slider next to the graph above and it will show you the effects on IC demand. More interactive results and background on our model can be found on the [background page](/background).
                             '''),
-                    html.P(["Number of deaths per country last updated per: ", str((date.today()-datetime.timedelta(days = 1)).strftime("%d/%m/%Y"))], style = {"fontSize":"70%"}),
-                    html.P(["Forecast fitted to hospitalizations in NL up until: ", forecaster.hospitals.iloc[-1,0]], style = {"fontSize":"70%"})],
+                    html.P(["Number of deaths per country last updated per: ", str((date.today()-datetime.timedelta(days = 1)).strftime("%d/%m/%Y"))], className="m3-footnote"),
+                    html.P(["Forecast fitted to hospitalizations in NL up until: ", forecaster.hospitals.iloc[-1,0]], className="m3-footnote")],
                     style = dict(marginTop= "20px", width = "900px"))], style = dict(marginTop= "120px"))
 
 ## background page
@@ -218,7 +213,8 @@ To give you an idea of how the model works, Figure 5 outlines the various outcom
                                     30: '30',
                                     40: '40'}),                            
                         ], 
-                    style = {"marginTop":"100px",
+                    style = {"margin-top":"100px",
+                             "margin-bottom":"200px",
                              "width": "900px"})])
 
 ## build up app layout
@@ -248,28 +244,25 @@ def update_figure1(R):
 
     # create figure
     outlook_fig = go.Figure()
-    outlook_fig.add_trace(go.Scatter(y=y_ic_3d, x= x_outlook, name = "Forecast 3 days ago",
-                                     line = dict(color='#e0e0e0', width=2)))
-    outlook_fig.add_trace(go.Scatter(y=y_ic_previous, x= x_outlook, name = "Forecast yesterday",
-                                     line = dict(color='#bfbfbf', width=2)))
-    outlook_fig.add_trace(go.Scatter(y=y_ic_outlook, x= x_outlook, name = "Latest forecast",
-                                     line = dict(color = '#949494')))
-    outlook_fig.add_trace(go.Scatter(y=y_ic_target, x= x_outlook, name = "Target",
-                                     line = dict(color = 'green')))
-    outlook_fig.add_trace(go.Scatter(y=ic_cap, x= x_outlook, name = "ic capacity",
-                                 line = dict(color='red', width=2, dash = 'dot')))
+
+    outlook_fig.add_trace(go.Scatter(y=y_ic_3d, x= x_outlook, name = "Forecast 2 days ago", line = dict(color='#e0e0e0', width=2)))
+    outlook_fig.add_trace(go.Scatter(y=y_ic_previous, x= x_outlook, name = "Forecast yesterday", line = dict(color='#bfbfbf', width=2)))
+    outlook_fig.add_trace(go.Scatter(y=y_ic_outlook, x= x_outlook, name = "Latest forecast", line = dict(color = '#949494')))
+    outlook_fig.add_trace(go.Scatter(y=y_ic_target, x= x_outlook, name = "Max R", line = dict(color = 'green')))
+    outlook_fig.add_trace(go.Scatter(y=ic_cap, x= x_outlook, name = "ic capacity", line = dict(color='#E21F35', width=2, dash ="dot")))
 
     # format figure
     outlook_fig.update_layout(
+        graph_layout,
         plot_bgcolor='white',
         xaxis_title="Days",
-        title = "Figure 4: Forecast of IC utilization"
+        title = dict(text="Figure 4: Forecast of demand for IC care", font=title_font)
             )
     outlook_fig.update_xaxes(showgrid=True, gridwidth=1, gridcolor='LightGrey')
     outlook_fig.update_yaxes(showgrid=True, gridwidth=1, gridcolor='LightGrey')
     return outlook_fig 
 
-## interaction for figure 5 with sliders
+# interaction for figure 5 with sliders
 @app.callback(
     Output('sensitivity_figure', 'figure'),
     [Input('measure_dropdown', 'value'),
@@ -280,7 +273,7 @@ def update_figure1(R):
      ])
 def update_figure1(measures, R, days, inc, IC):    
     #TO DO: integrate most of this into forecaster class
-    
+
     # get fitted model
     solution_outlook =  forecaster.SEIR_solution(intervention = [(30,factors[0]),(len(forecaster.hospitals),R/2.2), (10000,R/2.2)],
                                                  days = days, t_inc = inc, t_ic = IC)
@@ -288,10 +281,10 @@ def update_figure1(measures, R, days, inc, IC):
     solution_outlook["R_total"] = solution_outlook["R_mild"] + solution_outlook["R_hosp"]  + solution_outlook["R_ic"]  
     solution_outlook["Hosp_tot"] = solution_outlook["I_ic"] + solution_outlook["I_hosp"] + solution_outlook["I_fatal"] 
     x_outlook = pd.date_range(start='16/2/2020', periods=len(solution_outlook))
-    
+
     # create figure
     outlook_fig = go.Figure()
-    
+
     for measure in measures:
         outlook_fig.add_trace(go.Scatter(y=solution_outlook[mapping[measure]], x= x_outlook, name = measure))
 
@@ -299,11 +292,11 @@ def update_figure1(measures, R, days, inc, IC):
     outlook_fig.update_layout(
         plot_bgcolor='white',
         xaxis_title="Days",
-        title = "Figure 5: Outcome of forecast model, number of people for various measures"
+        title = "Figure 5: Outcome of forecast model, number of people for various parameters"
             )
     outlook_fig.update_xaxes(showgrid=True, gridwidth=1, gridcolor='LightGrey')
     outlook_fig.update_yaxes(showgrid=True, gridwidth=1, gridcolor='LightGrey')
-    return outlook_fig 
+    return outlook_fig
 
 ## interaction for figure 3 with slider
 @app.callback(
@@ -322,10 +315,6 @@ def display_page(pathname):
     else:
         return page_1_layout
 
-# serve app 
+# serve app
 if __name__ == '__main__':
     app.run_server(debug = True)
-    
-
-
-

@@ -14,6 +14,27 @@ import numpy as np
 from scipy.integrate import odeint
 
 
+graph_layout = {
+        "height": 700,
+        "width": 900,
+        "margin": dict(l=0, r=0, pad=4)
+        }
+
+annotation_layout = {
+        "xref":"x",
+        "yref":"y",
+        "yshift":20,
+        "xanchor":"left",
+        "showarrow":False,
+        "font": dict(family="Courier New, monospace", size=16, color="Darkgrey"),
+        "align":"left"
+        }
+
+title_font = {
+        "family": "proxima-nova, sans-serif",
+        "size": 20,
+        "color": "black"
+        }
 
 class Covid19Processing:
     def __init__(self):
@@ -176,23 +197,7 @@ class Covid19Processing:
                 if country == "China":    
                     y_country = y_country[:len(y_country)-30]
                 if country == "Netherlands" :
-                    fig.add_trace(go.Scatter(y=y_country, name = country, line = dict(width = 6)))
-                    fig.add_annotation(
-                            x=29,
-                            y=3.27,
-                            xref="x",
-                            yref="y",
-                            yshift=20,
-                            xanchor="left",
-                            text="Netherlands",
-                            showarrow=False,
-                            font=dict(
-                                family="Courier New, monospace",
-                                size=16,
-                                color="Darkgrey"
-                                ),
-                            align="left"
-                    )
+                    fig.add_trace(go.Scatter(y=y_country, name = country, line = dict(width = 6, color="black")))
                 else:
                     fig.add_trace(go.Scatter(y=y_country, name = country))
             except:
@@ -203,45 +208,25 @@ class Covid19Processing:
         for x in range(1,30): double2.append(double2[x-1]*np.sqrt(2))
         double4 = [1]
         for x in range(1,45): double4.append(double4[x-1]*np.sqrt(np.sqrt(2)))
-        fig.add_trace(go.Scatter(y=double, name = "Doubling every day",
-                                 line = dict(color='Lightgrey', width=2, dash='dot')))          
-        fig.add_trace(go.Scatter(y=double2, name = "Doubling every 2 days",
-                                 line = dict(color='Darkgrey', width=2, dash='dot')))                                     
-        fig.add_trace(go.Scatter(y=double4, name = "Doubling every 4 days",
-                                 line = dict(color='Grey', width=2, dash='dot')))     
-        fig.add_annotation(
-                x=14,
-                y=4.21,
-                xref="x",
-                yref="y",
-                yshift=20,
-                xanchor="left",
-                text="Doubling every day",
-                showarrow=False,
-                font=dict(
-                    family="Courier New, monospace",
-                    size=16,
-                    color="Darkgrey"
-                    ),
-                align="left"
-                )
+        fig.add_trace(go.Scatter(y=double, name = "x2 per day",
+                                 line = dict(color='Lightgrey', width=2, dash='dot'), showlegend=False))          
+        fig.add_trace(go.Scatter(y=double2, name = "x2 per 2 days",
+                                 line = dict(color='Darkgrey', width=2, dash='dot'), showlegend=False))                                     
+        fig.add_trace(go.Scatter(y=double4, name = "x2 per 4 days",
+                                 line = dict(color='Grey', width=2, dash='dot'), showlegend=False))     
+        fig.add_annotation(annotation_layout, x=14, y=4.21, text="x2 per day")
+        fig.add_annotation(annotation_layout, x=29, y=4.36, text="x2 per 2 days")
+        fig.add_annotation(annotation_layout, x=42, y=3.16, text="x2 per 3 days")
+
         fig.update_traces(mode='lines')
 
         fig.update_layout(
+            graph_layout,
             plot_bgcolor='white',
             xaxis_title="Days",
             yaxis_type = "log",
-            title = "Figure 1: total amount of deaths since the day of the first death",
-            height=600,
-            width=800,
-            showlegend=False,
-            margin=dict(
-                l=60,
-                r=10,
-                b=0,
-                t=10,
-                pad=4
-                ))
+            title = dict(text="Figure 1: Number of fatalities since the first fatality", font=title_font)
+            )
         fig.update_xaxes(showgrid=True, gridwidth=1, gridcolor='LightGrey')
         fig.update_yaxes(showgrid=True, gridwidth=1, gridcolor='LightGrey')
         return fig
@@ -259,15 +244,16 @@ class Covid19Processing:
                 if country == "China":    
                     y_country = y_country[:len(y_country)-30]
                 if country == "Netherlands":
-                    fig.add_trace(go.Scatter(y=y_country, name = country, line = dict(width = 6)))
+                    fig.add_trace(go.Scatter(y=y_country, name = country, line = dict(width = 6, color="black")))
                 else:
                     fig.add_trace(go.Scatter(y=y_country, name = country))
             except:
                 continue
         fig.update_layout(
+            graph_layout,
             plot_bgcolor='white',
             xaxis_title="Days",
-            title = "Figure 2: average growth (5 days) of new number of deaths"
+            title = dict(text="Figure 2: average growth (5 days) of new number of deaths", font=title_font)
         )
         fig.update_xaxes(showgrid=True, gridwidth=1, gridcolor='LightGrey')
         fig.update_yaxes(showgrid=True, gridwidth=1, gridcolor='LightGrey', tickformat= ',.0%')

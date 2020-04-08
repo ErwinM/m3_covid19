@@ -28,6 +28,19 @@ h3 {
   margin-top: 40px;
 }
 
-p {
+.m3-graph {
+  padding: 0;
+  margin-bottom: 1.334em;
+}
+
+.m3-footnote {
+  font-size: 70%;
+  margin-bottom: 0;
+}
+p, li {
   color: #71706f;
+}
+
+strong {
+  color: #E21F35;
 }
