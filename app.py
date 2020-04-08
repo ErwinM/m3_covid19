@@ -370,7 +370,7 @@ def update_figure1(measures, R, days, inc, IC):
     Output('R0_bar', 'figure'),
     [Input('I1_slider', 'value')])
 def update_figure2(R):
-    return forecaster.create_bar(name = "outlook", Rtarget = R)
+    return forecaster.create_bar(Rtarget = R)
 
 ## callback for switching page
 @app.callback(Output('page-content', 'children'), [Input('url', 'pathname')])
@@ -385,6 +385,7 @@ def display_page(pathname):
 # serve app 
 if __name__ == '__main__':
     app.run_server(debug = False)
-    
+
+fig,y = forecaster.create_bar(2)
 
 

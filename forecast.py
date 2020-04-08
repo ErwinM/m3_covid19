@@ -158,13 +158,16 @@ class forecast_covid19:
             maximum = IC.max()
         return Rtarget
         
-    def create_bar(self, name = "default", Rtarget = 2):
+    def create_bar(self, Rtarget = 2):
         # create bar chart for question 2
-        Rinitial = self.factors[name][0] * 2.2
-        Ractual = self.factors[name][1] * 2.2
-        barnames = ["R before measures", "R after measures", "Target R"]
-        barcolors = ['red', 'grey', 'green']
-        effective_R = go.Bar(y= [Rinitial, Ractual, Rtarget], x = barnames, 
+        y1 = [self.factors["outlook"][0]*2.2]
+        barnames = ["R before measures", "R estimate 3 days ago",
+                    "R estimate yesterday", "R estimate latest", "R target"]
+        barcolors = ['red', 'grey', 'grey', 'grey', 'green']
+        for bar in ["3d_ago_forecast", "previous_forecast", "outlook"]:
+            y1.append(self.factors[bar][1]*2.2)
+        y1.append(Rtarget)
+        effective_R = go.Bar(y= y1, x = barnames, 
                              name = "Reproduction rate (R)", marker_color = barcolors)
         fig_bar = go.Figure(data = [effective_R])
         fig_bar.update_layout(barmode='stack')
