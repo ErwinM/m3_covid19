@@ -1,4 +1,5 @@
 ## import packages
+import os
 import dash
 import dash_core_components as dcc
 import dash_html_components as html
@@ -69,10 +70,10 @@ page_1_layout = html.Div([navbar,
                  dbc.Container([
                     dbc.Jumbotron([
                         dcc.Markdown('''
-                            ## COVID19 in NL: how are we doing?
+                            ## Fighting COVID19: how are we doing?
                             Like most, we follow the news on Corona daily. We are bombarded with numbers on deaths, hospitalisations and projections on the availability of IC beds. However, to us, the torrent of daily numbers lack context. Without this context it is hard to make sense of it all. Specifically, we fail to find the answer to our two main questions:
 
-                            1. Are we slowing down the spread of COVID-19 ?
+                            1. Are we slowing down the spread?
                             
                             2. Will we have enough IC beds?
                            
@@ -318,5 +319,10 @@ def display_page(pathname):
         return page_1_layout
 
 # serve app
+is_prod = os.environ.get('IS_HEROKU', None)
+
 if __name__ == '__main__':
-    app.run_server(debug = True)
+    if is_prod:
+        app.run_server(debug=False)
+    else:
+        app.run_server(debug=True)
