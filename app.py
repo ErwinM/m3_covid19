@@ -81,7 +81,7 @@ page_1_layout = html.Div([navbar,
                         className="m3-jumbo"),
                     dcc.Markdown('''
                         ### Question 1: Are we slowing down the spread of COVID-19 ?
-                        COVID19’s spread follows an exponential growth pattern.  Exponential growth is non-intuitive: even when the number of new cases rises daily, we could still be making progress. in slowing the spread. We use the following two graphs to determine where we stand today and to what extend our mitigating measures are slowing the spread of the virus.
+                        COVID19’s spread follows an exponential growth pattern.  Exponential growth is non-intuitive: even when the number of new cases rises daily, we could still be making progress in slowing the spread. We use the following two graphs to determine where we stand today and to what extend our mitigating measures are slowing the spread of the virus.
                         '''),
                     dbc.Container(children=[dcc.Graph(id = 'deaths', figure = fig_deaths)], className="m3-graph"),
                     dcc.Markdown('''
