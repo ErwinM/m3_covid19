@@ -21,7 +21,7 @@ data.process(rows=20, debug=False)
 
 # plot deaths and daily growth rate
 countries_to_plot = ["Netherlands", "Italy", "Germany", "France", "Spain",
-                     "Belgium", "United Kingdom", "China"]
+                     "Belgium", "United Kingdom", "China", "Japan", "United States"]
 fig_deaths = data.create_growth_figures("deaths",countries_to_plot)
 fig_growth = data.create_factor_figure(countries_to_plot)
 
@@ -49,6 +49,7 @@ app = dash.Dash(__name__,
                 external_stylesheets = [dbc.themes.BOOTSTRAP])
 server = app.server
 app.config['suppress_callback_exceptions'] = True
+app.title = "M3 COVID Dashboard"
 
 # Navbar
 navbar = dbc.Container(
@@ -70,7 +71,7 @@ page_1_layout = html.Div([navbar,
                  dbc.Container([
                     dbc.Jumbotron([
                         dcc.Markdown('''
-                            ## Fighting COVID19: how are we doing?
+                            ## Fighting COVID19 in NL: how are we doing?
                             Like most, we follow the news on Corona daily. We are bombarded with numbers on deaths, hospitalisations and projections on the availability of IC beds. However, to us, the torrent of daily numbers lack context. Without this context it is hard to make sense of it all. Specifically, we fail to find the answer to our two main questions:
 
                             1. Are we slowing down the spread?
@@ -129,8 +130,8 @@ Based on the available data, our model estimates R for two periods:
                     
                     To see the impact of different values of R for yourself, you can change the slider next to the graph above and it will show you the effects on IC demand. More interactive results and background on our model can be found on the [background page](/background).
                     '''),
-                    html.P(["Number of deaths per country last updated per: ", str((date.today()-datetime.timedelta(days = 1)).strftime("%d/%m/%Y"))], className="m3-footnote"),
-                    html.P(["Forecast fitted to hospitalizations in NL up until: ", forecaster.hospitals.iloc[-1,0]], className="m3-footnote")],
+                    html.P(["Number of deaths per country. Source: John Hopkins University. lastly retrieved per: ", str(date.today().strftime("%d/%m/%Y"))+" 00:00 CET"], className="m3-footnote"),
+                    html.P(["Forecast based on hospitalizations in the Netherlands from NICE, data used up until: ", forecaster.hospitals.iloc[-1,0]], className="m3-footnote")],
                     style = dict(marginTop= "20px", width = "900px"))], style = dict(marginTop= "120px"))
 
 ## background page
@@ -248,11 +249,11 @@ def update_figure1(R):
     # create figure
     outlook_fig = go.Figure()
 
-    outlook_fig.add_trace(go.Scatter(y=y_ic_3d, x= x_outlook, name = "Forecast 2 days ago", line = dict(color='#e0e0e0', width=2)))
-    outlook_fig.add_trace(go.Scatter(y=y_ic_previous, x= x_outlook, name = "Forecast yesterday", line = dict(color='#bfbfbf', width=2)))
-    outlook_fig.add_trace(go.Scatter(y=y_ic_outlook, x= x_outlook, name = "Latest forecast", line = dict(color = '#949494')))
-    outlook_fig.add_trace(go.Scatter(y=y_ic_target, x= x_outlook, name = "Max R", line = dict(color = 'green')))
-    outlook_fig.add_trace(go.Scatter(y=ic_cap, x= x_outlook, name = "ic capacity", line = dict(color='#E21F35', width=2, dash ="dot")))
+    outlook_fig.add_trace(go.Scatter(y=y_ic_3d, x= x_outlook, name = "Forecast 2 days ago", line = dict(color='#e0e0e0', width=2), hovertemplate = '%{y:.0f}'))
+    outlook_fig.add_trace(go.Scatter(y=y_ic_previous, x= x_outlook, name = "Forecast yesterday", line = dict(color='#bfbfbf', width=2), hovertemplate = '%{y:.0f}'))
+    outlook_fig.add_trace(go.Scatter(y=y_ic_outlook, x= x_outlook, name = "Latest forecast", line = dict(color = '#949494'),hovertemplate = '%{y:.0f}'))
+    outlook_fig.add_trace(go.Scatter(y=y_ic_target, x= x_outlook, name = "Max R", line = dict(color = 'green'), hovertemplate = '%{y:.0f}'))
+    outlook_fig.add_trace(go.Scatter(y=ic_cap, x= x_outlook, name = "ic capacity", line = dict(color='#E21F35', width=2, dash ="dot"), hovertemplate = '%{y:.0f}'))
 
     # format figure
     outlook_fig.update_layout(
@@ -289,7 +290,10 @@ def update_figure1(measures, R, days, inc, IC):
     outlook_fig = go.Figure()
 
     for measure in measures:
-        outlook_fig.add_trace(go.Scatter(y=solution_outlook[mapping[measure]], x= x_outlook, name = measure))
+        outlook_fig.add_trace(go.Scatter(y=solution_outlook[mapping[measure]], 
+                                         x= x_outlook, 
+                                         name = measure,
+                                         hovertemplate = '%{y:.0f}'))
 
     # format figure
     outlook_fig.update_layout(

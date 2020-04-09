@@ -187,7 +187,7 @@ class Covid19Processing:
         for country in countries_to_plot:    
             try:
                 # population = self.country_metadata[country]["population"]
-                y_country = df[df.index == country].iloc[:,4:].transpose()
+                y_country = df[df.index == country].iloc[:,1:].transpose()
                 y_country.columns = [country]
                 if metric == "deaths":
                     y_country = y_country[y_country[country] > 1]
@@ -216,7 +216,7 @@ class Covid19Processing:
                                  line = dict(color='Grey', width=2, dash='dot'), showlegend=False))     
         fig.add_annotation(annotation_layout, x=14, y=4.21, text="doubles per day")
         fig.add_annotation(annotation_layout, x=29, y=4.36, text="doubles per 2 days")
-        fig.add_annotation(annotation_layout, x=42, y=3.16, text="doubles per 3 days")
+        fig.add_annotation(annotation_layout, x=42, y=3.16, text="doubles per 4 days")
 
         fig.update_traces(mode='lines')
 
@@ -253,7 +253,7 @@ class Covid19Processing:
             graph_layout,
             plot_bgcolor='white',
             xaxis_title="Days",
-            title = dict(text="Figure 2: 5-day average growth of fatalities", font=title_font)
+            title = dict(text="Figure 2: 5-day average growth of fatalities since the first fatality", font=title_font)
         )
         fig.update_xaxes(showgrid=True, gridwidth=1, gridcolor='LightGrey')
         fig.update_yaxes(showgrid=True, gridwidth=1, gridcolor='LightGrey', tickformat= ',.0%')
