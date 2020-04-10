@@ -249,6 +249,8 @@ class Covid19Processing:
                     fig.add_trace(go.Scatter(y=y_country, name = country))
             except:
                 continue
+        fig.add_trace(go.Scatter(y=np.ones(50)*0, showlegend = False, line = dict(width = 2, color="LightGrey", dash = 'dot')))
+        fig.add_annotation(annotation_layout, x=45, y=0, text="0% growth")
         fig.update_layout(
             graph_layout,
             plot_bgcolor='white',
