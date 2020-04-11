@@ -182,7 +182,7 @@ To give you an idea of how the model works, Figure 5 outlines the various outcom
                                 id = 'R_slider',
                                 min = 0,
                                 max = 2,
-                                step = 0.01,
+                                step = 0.1,
                                 value = factors[1]*2.2,
                                 marks = {
                                     0: '0',
@@ -244,6 +244,7 @@ def update_figure1(R):
     y_ic_previous = solution_prev["I_ic"] + solution_prev["I_fatal"] * 0.5
     y_ic_3d = solution_3d["I_ic"] + solution_3d["I_fatal"] * 0.5
     ic_cap = np.ones(len(y_ic_outlook))*1900
+    ic_min = np.ones(len(y_ic_outlook))*700
     x_outlook = pd.date_range(start='16/2/2020', periods=len(y_ic_outlook))
 
     # create figure
@@ -254,6 +255,7 @@ def update_figure1(R):
     outlook_fig.add_trace(go.Scatter(y=y_ic_outlook, x= x_outlook, name = "Latest forecast", line = dict(color = '#949494'),hovertemplate = '%{y:.0f}'))
     outlook_fig.add_trace(go.Scatter(y=y_ic_target, x= x_outlook, name = "Max R", line = dict(color = 'green'), hovertemplate = '%{y:.0f}'))
     outlook_fig.add_trace(go.Scatter(y=ic_cap, x= x_outlook, name = "ic capacity", line = dict(color='#E21F35', width=2, dash ="dot"), hovertemplate = '%{y:.0f}'))
+    outlook_fig.add_trace(go.Scatter(y=ic_min, x= x_outlook, name = "short term objective", line = dict(color='#E21F35', width=2, dash ="dot"), hovertemplate = '%{y:.0f}'))
 
     # format figure
     outlook_fig.update_layout(

@@ -33,4 +33,25 @@ mapping = {"Patients in hospital": "Hosp_tot",
            "Deaths": "R_fatal"}
 
 
-        
+# Style formating dictionaries
+graph_layout = {
+        "height": 700,
+        "width": 900,
+        "margin": dict(l=0, r=0, pad=4)
+        }
+
+annotation_layout = {
+        "xref":"x",
+        "yref":"y",
+        "yshift":20,
+        "xanchor":"center",
+        "showarrow":False,
+        "font": dict(family="Courier New, monospace", size=16, color="Darkgrey"),
+        "align":"left"
+        }
+
+title_font = {
+        "family": "Courier New, monospace",
+        "size": 20,
+        "color": "#24292e"
+        }
