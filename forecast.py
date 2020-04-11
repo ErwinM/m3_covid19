@@ -44,8 +44,8 @@ class forecast_covid19:
         
         # Clinical proportions
         p_mild = 0.8
-        p_hosp_0 = 0.15 # hospitalised
-        p_ic_0 = 0.05 # IC
+        p_hosp_0 = 0.145 # hospitalised
+        p_ic_0 = 0.055 # IC % from dutch figures
         
         # mortality
         p_fatal = 0.02

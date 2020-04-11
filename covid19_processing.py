@@ -140,7 +140,7 @@ class Covid19Processing:
         else:
             return None
 
-    def get_new_cases_details(self, country, avg_n=5, median_n=3):
+    def get_new_cases_details(self, country, avg_n=7, median_n=3):
         deaths = self.get_country_data("deaths").loc[country]
         df = pd.DataFrame(deaths)
         df = df.rename(columns={country: "confirmed_deaths"})
@@ -232,7 +232,7 @@ class Covid19Processing:
             graph_layout,
             plot_bgcolor='white',
             xaxis_title="Days",
-            title = dict(text="Figure 2: 5-day average growth of fatalities since the first fatality", font=title_font)
+            title = dict(text="Figure 2: 7-day average growth of fatalities since the first fatality", font=title_font)
         )
         fig.update_xaxes(showgrid=True, gridwidth=1, gridcolor='LightGrey')
         fig.update_yaxes(showgrid=True, gridwidth=1, gridcolor='LightGrey', tickformat= ',.0%')
