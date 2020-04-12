@@ -26,6 +26,8 @@ class forecast_covid19:
     def SEIR_solution(self, intervention = [(100,1), (100000, 0.2)],e0 = 20, 
                       days = 100, t_inc = 5.2, t_inf = 3, t_ic = 21):
         # INPUT PARAMETERS
+        # TO DO: read from params file
+        
         N = 17000000
         i0 = 1
         R0 = 2.2

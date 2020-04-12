@@ -1,0 +1,12 @@
+﻿Parameter;Value
+Incubation time;5 days
+Infectious time (before being quarantined);3 days
+Duration of a mild case;11 days
+Time in hospital without IC;7 days
+Time on IC;21 days
+Duration before patient ends up in hospital;5 days
+Number of mild cases;80.00%
+Number of cases that require hospitalization;14.50%
+Number of cases that require IC care;5.50%
+Mortality rate;3.00%
+Percentage of deaths from IC;50.00%
