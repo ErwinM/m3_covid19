@@ -25,16 +25,15 @@ class forecast_covid19:
         self.MAX_RANGE = 100000
         
     def get_NICE_data(self):
-        NICE_URLS = ['https://www.stichting-nice.nl/covid-19/public/intake-count']
         try:
             import requests
-            import io
-            urlData = requests.get(NICE_URLS[0], timeout = 10).content
+            urlData = requests.get('https://www.stichting-nice.nl/covid-19/public/intake-count'
+                                   ,timeout = 3).content
             rawData = pd.read_json(urlData.decode('utf-8'))
             base = [0] * 11
             self.ic_actuals = base + rawData["intakeCount"][1:-5].tolist()
         except:
-            self.ic_actuals = [0] * 40
+            self.ic_actuals = "empty"
         
     def SEIR_solution(self, intervention = [(100,1), (100000, 0.2)],e0 = 20, 
                       days = 100, t_inc = 5.2, t_inf = 3, t_ic = 21):
