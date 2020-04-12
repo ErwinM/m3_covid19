@@ -14,6 +14,9 @@ import bisect
 import scipy
 import plotly.graph_objs as go
 import covid19_util as util 
+import requests
+import sys
+import io
 
 class forecast_covid19:
     def __init__(self):
@@ -22,6 +25,18 @@ class forecast_covid19:
         self.factors = {}    
         self.results = {}
         self.MAX_RANGE = 100000
+        
+    def get_NICE_data(self):
+        NICE_URLS = ['https://www.stichting-nice.nl/covid-19/public/intake-count']
+        for url in NICE_URLS:
+            try:
+                urlData = requests.get(url).content
+            except Exception as e:
+                sys.exit('ERROR: could not download {} ({})'.format(url, e))
+            rawData = pd.read_json(io.StringIO(urlData.decode('utf-8')))
+        base = [0] * 11
+        self.ic_actuals = base + rawData["intakeCount"][1:-5].tolist()
+        
         
     def SEIR_solution(self, intervention = [(100,1), (100000, 0.2)],e0 = 20, 
                       days = 100, t_inc = 5.2, t_inf = 3, t_ic = 21):
