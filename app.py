@@ -349,4 +349,4 @@ if __name__ == '__main__':
     if is_prod:
         app.run_server(debug=False)
     else:
-        app.run_server(debug=True)
+        app.run_server(debug=False)
