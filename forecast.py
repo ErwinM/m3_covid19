@@ -14,7 +14,7 @@ import bisect
 import scipy
 import plotly.graph_objs as go
 import covid19_util as util 
-
+from io import StringIO
 
 class forecast_covid19:
     def __init__(self):
@@ -27,9 +27,9 @@ class forecast_covid19:
     def get_NICE_data(self):
         try:
             import requests
-            urlData = requests.get('https://www.stichting-nice.nl/covid-19/public/intake-count'
-                                   ,timeout = 3).content
-            rawData = pd.read_json(urlData.decode('utf-8'))
+            r = requests.get('https://raw.githubusercontent.com/J535D165/CoronaWatchNL/master/data/nice_ic_by_day.csv'
+                                   ,timeout = 3)
+            rawData = pd.read_csv(StringIO(r.text))
             base = [0] * 11
             self.ic_actuals = base + rawData["intakeCount"][1:-5].tolist()
         except:
