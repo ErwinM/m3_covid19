@@ -31,7 +31,7 @@ fig_growth = data.create_factor_figure(countries_to_plot)
 
 # fit model to hospitalizations
 forecaster = forecast.forecast_covid19()
-# forecaster.get_NICE_data()
+forecaster.get_NICE_data()
 forecaster.fit_REIS(cutoff= 30, name = "outlook")
 forecaster.fit_REIS(cutoff= 30, name = "previous_forecast", days_back = 1)
 forecaster.fit_REIS(cutoff= 30, name = "3d_ago_forecast", days_back = 3)
@@ -269,7 +269,7 @@ def update_figure1(R):
     outlook_fig.add_trace(go.Scatter(y=y_ic_previous, x= x_outlook, name = "Forecast yesterday", line = dict(color='#bfbfbf', width=2), hovertemplate = '%{x}, '+'%{y:.0f}'))
     outlook_fig.add_trace(go.Scatter(y=y_ic_outlook, x= x_outlook, name = "Latest forecast", line = dict(color = '#949494'),hovertemplate = '%{x}, '+'%{y:.0f}'))
     outlook_fig.add_trace(go.Scatter(y=y_ic_target, x= x_outlook, name = "Max R", line = dict(color = 'green'), hovertemplate = '%{x}, '+'%{y:.0f}'))
-    # outlook_fig.add_trace(go.Scatter(y=forecaster.ic_actuals, x= x_outlook, name = "Actual (COVID) IC patients", line = dict(color='black', width=2), mode = 'markers', hovertemplate = '%{x}, '+'%{y:.0f}'))
+    outlook_fig.add_trace(go.Scatter(y=forecaster.ic_actuals, x= x_outlook, name = "Actual (COVID) IC patients", line = dict(color='black', width=2), mode = 'markers', hovertemplate = '%{x}, '+'%{y:.0f}'))
     outlook_fig.add_trace(go.Scatter(y=ic_cap, x= x_outlook, name = "ic capacity", line = dict(color='#E21F35', width=2, dash ="dot"), showlegend=False, hovertemplate = '%{x}, '+'%{y:.0f}'))
     outlook_fig.add_trace(go.Scatter(y=ic_min, x= x_outlook, name = "short term objective", line = dict(color='green', width=2, dash ="dot"), showlegend=False, hovertemplate = '%{x}, '+'%{y:.0f}'))
     outlook_fig.add_annotation(annotation_layout, x=(date.today()-datetime.timedelta(days = 36)), y=1870, text="Max IC capacity")

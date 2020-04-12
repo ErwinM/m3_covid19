@@ -29,8 +29,8 @@ class forecast_covid19:
         try:
             import requests
             import io
-            urlData = requests.get(NICE_URLS[0]).content
-            rawData = pd.read_json(io.StringIO(urlData.decode('utf-8')))
+            urlData = requests.get(NICE_URLS[0], timeout = 10).content
+            rawData = pd.read_json(urlData.decode('utf-8'))
             base = [0] * 11
             self.ic_actuals = base + rawData["intakeCount"][1:-5].tolist()
         except:
