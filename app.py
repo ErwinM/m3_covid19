@@ -13,21 +13,13 @@ import forecast
 from datetime import date
 import dash_table
 
-##create static figures for question 1
-
+## data preparation
 
 # get data from JHU
 data = Covid19Processing()
 data.process(rows=20, debug=False)
+data.list_countries()
 params = pd.read_csv("params.csv", sep = ";")
-
-# plot deaths and daily growth rate
-countries_to_plot = ["Netherlands", "Italy", "Germany", "France", "Spain",
-                     "Belgium", "United Kingdom", "China", "Japan", "United States"]
-fig_deaths = data.create_growth_figures("deaths",countries_to_plot)
-fig_growth = data.create_factor_figure(countries_to_plot)
-
-## create static figures for question 2
 
 # fit model to hospitalizations
 forecaster = forecast.forecast_covid19()
@@ -35,7 +27,6 @@ forecaster.get_NICE_data()
 forecaster.fit_REIS(cutoff= 30, name = "outlook")
 forecaster.fit_REIS(cutoff= 30, name = "previous_forecast", days_back = 1)
 forecaster.fit_REIS(cutoff= 30, name = "3d_ago_forecast", days_back = 2)
-
 
 # get betas from fitted model
 factors = forecaster.factors["outlook"]
@@ -47,6 +38,7 @@ Rtarget = forecaster.determine_Rtarget(name = "outlook")
 yesterday = str((date.today()-datetime.timedelta(days = 1)).strftime("%d/%m/%Y"))
 forecast_day = forecaster.hospitals.iloc[-1,0]
 
+## dash app
 # App definition and authorisation
 app = dash.Dash(__name__,
                 external_stylesheets = [dbc.themes.BOOTSTRAP])
@@ -68,7 +60,7 @@ dbc.Container([
         fixed = "top")
                 ])
 
-##dashboard page
+# Dashboard page
 page_1_layout = \
 html.Div([navbar,
     dbc.Container([
@@ -88,11 +80,20 @@ html.Div([navbar,
            ### Question 1: Are we slowing down the spread of COVID-19 ?
            COVID19’s spread follows an exponential growth pattern.  Exponential growth is non-intuitive: even when the number of new cases rises daily, we could still be making progress in slowing the spread. We use the following two graphs to determine where we stand today and to what extend our mitigating measures are slowing the spread of the virus.
            '''),
-        dbc.Container(children=[dcc.Graph(id = 'deaths', figure = fig_deaths)], className="m3-graph"),
+        dbc.Container([
+            dcc.Graph(id = 'deaths', ),
+            dcc.Dropdown(
+                id = 'country_dropdown',
+                options= data.option_list,
+                value=["Netherlands", "Italy", "Germany", "France", "Spain",
+                         "Belgium", "United Kingdom"],
+                multi=True)],className = "m3-graph"),
         dcc.Markdown('''
-           Figure 1 is a widely used and useful graph: it shows the growth trajectory of the number of deaths in selected European countries. The y-axis is logaritmic: every major step corresponds to a 10-fold increase. The graph shows that the rise in death toll is slowing down in most European countries. However, there are big differences. The death toll is no longer doubling every 4 days in The Netherlands, Italy, Germany and Spain. In France the death toll appears to still double every 4 days and in the UK the time to double is even shorter. To better understand the rate of growth we should look at figure 2, showing the day-to-day growth of new COVID19 deaths.
+           Figure 1 is a widely used and useful graph: it shows the growth trajectory of the number of deaths in selected European countries. The y-axis is logaritmic: every major step corresponds to a 10-fold increase. We have selected several other European countries we think are relevant to compare with The Netherlands. 
+           
+           The graph shows that the rise in death toll is slowing down in most European countries. However, there are big differences. The death toll is no longer doubling every 4 days in The Netherlands, Italy, Germany and Spain. In France the death toll appears to still double every 4 days and in the UK the time to double is even shorter. To better understand the rate of growth we should look at figure 2, showing the day-to-day growth of new COVID19 deaths.
            '''),
-        dbc.Container(children=[dcc.Graph(id = 'growth', figure = fig_growth)], className="m3-graph"),
+        dbc.Container(children=[dcc.Graph(id = 'growth', )], className="m3-graph"),
         dcc.Markdown('''
            Figure 2 takes the average number of newly reported deaths of the past seven days and compares it to the average calculated the day before.  For a country to successfully contain the spread of COVID19, this number needs to drop below 0.
            '''),
@@ -138,7 +139,7 @@ html.Div([navbar,
         html.P(["Actual IC patients from NICE, data used up until: ", forecaster.hospitals.iloc[-1,0]], className="m3-footnote")],
         style = dict(marginTop= "20px", width = "900px"))], style = dict(marginTop= "120px"))
 
-## background page
+## Background page
 page_2_layout = \
 html.Div([
     navbar,
@@ -237,12 +238,34 @@ html.Div([
              "margin-bottom":"200px",
              "width": "900px"})])
 
-## build up app layout
+# Build up app layout
 app.layout = html.Div(
                 [dcc.Location(id = 'url', refresh = False),
                  html.Div(id = 'page-content')])
 
-## interaction for figure 4 with slider
+
+# callback for adding countries to figure 1
+@app.callback(
+    Output('deaths', 'figure'),
+    [Input('country_dropdown', 'value')])
+def update_figure3(options):
+    return data.create_growth_figures("deaths",options)
+
+# callback for adding countries to figure 2
+@app.callback(
+    Output('growth', 'figure'),
+    [Input('country_dropdown', 'value')])
+def update_figure4(options):
+    return data.create_factor_figure(options)
+
+# interaction for figure 3 with slider
+@app.callback(
+    Output('R0_bar', 'figure'),
+    [Input('I1_slider', 'value')])
+def update_figure2(R):
+    return forecaster.create_bar(Rtarget = R)
+
+# interaction for figure 4 with slider
 @app.callback(
     Output('outlook_figure', 'figure'),
     [Input('I1_slider', 'value')])
@@ -298,7 +321,6 @@ def update_figure1(R):
      ])
 def update_figure1(measures, R, days, inc, IC):
     #TO DO: integrate most of this into forecaster class
-
     # get fitted model
     solution_outlook =  forecaster.SEIR_solution(intervention = [(30,factors[0]),(len(forecaster.hospitals),R/2.2), (10000,R/2.2)],
                                                  days = days, t_inc = inc, t_ic = IC)
@@ -326,14 +348,7 @@ def update_figure1(measures, R, days, inc, IC):
     outlook_fig.update_yaxes(showgrid=True, gridwidth=1, gridcolor='LightGrey')
     return outlook_fig
 
-## interaction for figure 3 with slider
-@app.callback(
-    Output('R0_bar', 'figure'),
-    [Input('I1_slider', 'value')])
-def update_figure2(R):
-    return forecaster.create_bar(Rtarget = R)
-
-## callback for switching page
+# callback for switching page
 @app.callback(Output('page-content', 'children'), [Input('url', 'pathname')])
 def display_page(pathname):
     if pathname == '/dashboard':
@@ -350,4 +365,4 @@ if __name__ == '__main__':
     if is_prod:
         app.run_server(debug=False)
     else:
-        app.run_server(debug=False)
+        app.run_server(debug=True)

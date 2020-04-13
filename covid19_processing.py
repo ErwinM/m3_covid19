@@ -155,6 +155,12 @@ class Covid19Processing:
         df.filtered_growth_factor = scipy.ndimage.median_filter(df.filtered_growth_factor, median_n, mode="nearest")
         return df
     
+    def list_countries(self):
+        options = []
+        for key in self.country_metadata:
+            options.append({"label":key, "value":key})
+        self.option_list = options
+    
     def create_growth_figures(self, metric, countries_to_plot):
         if metric == "deaths":
             df = self.dataframes['deaths_by_country']
