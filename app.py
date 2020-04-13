@@ -34,7 +34,7 @@ forecaster = forecast.forecast_covid19()
 forecaster.get_NICE_data()
 forecaster.fit_REIS(cutoff= 30, name = "outlook")
 forecaster.fit_REIS(cutoff= 30, name = "previous_forecast", days_back = 1)
-forecaster.fit_REIS(cutoff= 30, name = "3d_ago_forecast", days_back = 3)
+forecaster.fit_REIS(cutoff= 30, name = "3d_ago_forecast", days_back = 2)
 
 
 # get betas from fitted model
