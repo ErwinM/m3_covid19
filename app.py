@@ -154,7 +154,7 @@ html.Div([
             Modelling the COVID-19 outbreak is a complex endeavour: very little is known about key factors such as the infectious period, incubation time, mortality rate and reproduction rate. Models therefore carry a high amount of uncertainty. This does not mean they should not be made, as they do provide insight in what direction the outbreak is progressing and are key to supporting decision-makers in their next steps.
 
             To keep ourselves up to date on the latest forecast, we have created our own model to forecast the development of the COVID-19 outbreak. It is a so-called compartmental model and more specifically [a SEIR model](https://en.wikipedia.org/wiki/Compartmental_models_in_epidemiology#The_SEIR_model), a common approach to modelling epidemics. You can find a good description of a simple compartmental model  [in this video](https://www.youtube.com/watch?v=Qrp40ck3WpI)
-            If you are curious how we implemented the compartmental model, have a look at the source code [Github.](https://github.com/ErwinM/m3_covid19). The parameters our model uses can be found [here](https://github.com/ErwinM/m3_covid19/blob/master/parameters.py).
+            If you are curious how we implemented the compartmental model, have a look at the source code [Github](https://github.com/ErwinM/m3_covid19). The parameters our model uses can be found [here](https://github.com/ErwinM/m3_covid19/blob/master/parameters.py).
             '''),
         dcc.Markdown('''
             To give you an idea of how the model works, Figure 5 outlines the various outcomes of the model and lets you see the impact of changing some of the key input parameters.
