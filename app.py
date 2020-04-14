@@ -71,7 +71,7 @@ html.Div([navbar,
 
                 2 Will we have enough IC beds?
 
-                Of course, the weekly RIVM briefing answer these same questions. Our dashboard tries to answers them every day based on the latest data available. Our dashboard is updated every day at midnight.
+                Of course, the weekly RIVM briefing answer these same questions. Our dashboard tries to answers them every day based on the latest data available. **Our dashboard is updated every day at midnight**.
                 ''')],
                className="m3-jumbo"),
         dcc.Markdown('''
