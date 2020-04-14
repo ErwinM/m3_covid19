@@ -45,3 +45,14 @@ p, li {
 strong {
   color: #E21F35;
 }
+
+.m3-graph .Select-value {
+  background: #e9ecef !important;
+  color: #71706f !important;
+  border-color: #ccc !important;
+  margin: 5px 0px 5px 5px;
+}
+
+.m3-graph .Select-value-icon {
+  border-color: #ccc !important;
+}

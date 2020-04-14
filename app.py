@@ -66,16 +66,16 @@ html.Div([navbar,
             dcc.Markdown('''
                 ## Fighting COVID19 in NL: how are we doing?
                 Like most, we follow the news on Corona daily. We are bombarded with numbers on deaths, hospitalisations and projections on the availability of IC beds. However, to us, the torrent of daily numbers lack context. Without this context it is hard to make sense of it all. Specifically, we fail to find the answer to our two main questions:
-                
+
                 1. Are we slowing down the spread?
-                
+
                 2. Will we have enough IC beds?
-                
-                Of course the RIVM provides good context to answering these questions, but only weekly. So our dashboard below tries to provide daily answers to these two questions based on the latest data available. **This dashboard is updated every day at midnight**.
+
+                Of course, the weekly RIVM briefing tries to answer these questions, but we want these answers daily. Our dashboard below provides up-to-date answers to both questions daily. **Our dashboard is updated every day at midnight**.
                 ''')],
                className="m3-jumbo"),
         dcc.Markdown('''
-           ### Question 1: Are we slowing down the spread of COVID-19 ?
+           ### Question 1: Are we slowing down the spread ?
            COVID19’s spread follows an exponential growth pattern.  Exponential growth is non-intuitive: even when the number of new cases rises daily, we could still be making progress in slowing the spread. We use the following two graphs to determine where we stand today and to what extend our mitigating measures are slowing the spread of the virus.
            '''),
         dbc.Container([
@@ -87,9 +87,9 @@ html.Div([navbar,
                          "Belgium", "United Kingdom"],
                 multi=True)],className = "m3-graph"),
         dcc.Markdown('''
-           Figure 1 is a widely used and useful graph: it shows the growth trajectory of the number of deaths in selected European countries. The y-axis is logaritmic: every major step corresponds to a 10-fold increase. We have selected several other European countries we think are relevant to compare with The Netherlands. 
-           
-           The graph shows that the rise in death toll is slowing down in most European countries. However, there are big differences. The death toll is no longer doubling every 4 days in The Netherlands, Italy, Germany and Spain. In France the death toll appears to still double every 4 days and in the UK the time to double is even shorter. To better understand the rate of growth we should look at figure 2, showing the day-to-day growth of new COVID19 deaths.
+           Figure 1 is a widely used and useful graph: it shows the growth trajectory of the number of deaths in selected European countries. The y-axis is logaritmic: every major step corresponds to a 10-fold increase. We have selected several other European countries we think are relevant to compare with The Netherlands.
+
+           The graph shows that the rise in death toll is slowing down in most European countries. The curves are bending away from exponential growth. However, this graph lacks the detail required for us to place daily numbers into context. Figure 2 zooms in on the underlying growth rates.
            '''),
         dbc.Container(children=[dcc.Graph(id = 'growth', )], className="m3-graph"),
         dcc.Markdown('''
@@ -97,10 +97,10 @@ html.Div([navbar,
            '''),
         dcc.Markdown('''
            ### Question 2: Will we have enough IC beds?
-           This is not an easy question to answer, as it involves the future. To answer it, we need to forecast both the demand and the availability of IC care in The Netherlands. For the availability we use the latest available information: 2.400 beds will be available, of which 1.900 will be available to patients suffering from COVID19.
-           
-           To forecast demand, we have created our own, simplified, forecasting model based on the [SEIR model](https://en.wikipedia.org/wiki/Compartmental_models_in_epidemiology#The_SEIR_model).  A key variable in this model is the reproduction rate (R) :  the number of people a person infected with COVID-19 infects.  The bulk of the measures taken in The Netherlands are aimed at lowering this reproduction rate. Lowering R means less people get infected at the same time, which means less people need IC care simultaneously: flattening the curve.
-           
+           This is not an easy question to answer, as it involves the future. To answer it, we need to forecast both the demand and the availability of IC care in The Netherlands. For availability we use the latest available information: 2.400 beds, of which 1.900 will be available to patients suffering from COVID19.
+
+           To forecast demand, we have created our own, simplified, forecasting model based on the [SEIR model](https://en.wikipedia.org/wiki/Compartmental_models_in_epidemiology#The_SEIR_model).  A key variable in this model is the reproduction rate (R): the number of people a person infected with COVID-19 infects.  The bulk of the measures taken in The Netherlands are aimed at lowering R. A lower R means less people get infected at the same time, which means less people need IC care simultaneously, thus flattening the curve.
+
            To gauge the effectiveness of measures taken so far and to project their result on IC demand we follow the approach described below.
            Based on the available data, our model estimates R for two periods:
            * (i) the initial period when measures were not yet taken and
@@ -124,22 +124,22 @@ html.Div([navbar,
                                   3: '3',
                                   4: '4'})], style = {"marginTop": "100px"}), md = 2)], className="m3-graph"),
         dcc.Markdown('''
-        Figure 3 shows our model’s estimate of the reproduction rate during these periods. Figure 3 also includes a ‘Target R’ being the maximum value for R where we still have enough IC capacity available. Figure 4 shows our model’s projection for the corresponding IC demand. Both graphs show our estimate for today and our estimates from the last two days. The latest forecast is based on hospitalizations up until 5 days ago, as it takes a while for hospitals to report every patient. 
+        Figure 3 shows our model’s estimate of the reproduction rate during these periods. Figure 4 shows our model’s projection for the corresponding IC demand. Both graphs show our estimate for today and our estimates from the last two days. The latest forecast is based on hospitalizations up until 5 days ago, as it takes a while for hospitals to report every patient.
         '''),
         dcc.Graph(id = 'outlook_figure', className="m3-graph"),
         dcc.Markdown('''
-        Time lag plays an important role in projecting demand for IC beds. The effects of the NL measures did not have an immediate impact on hospitalisation and IC rates. It takes roughly 2 weeks from initial infection to needing IC care and 3 weeks after that before the IC bed is released.  Because of this, the current numbers still include patients which were infected before the NL measures were implemented. As a result, our estimates of R and corresponding IC demand are still changing daily as the share of patients infected before the NL measures declines.
-    
-        To see the impact of different values of R for yourself, you can change the slider next to the graph above and it will show you the effects on IC demand. More interactive results and background on our model can be found on the [background page](/background).
+        Time lag plays an important role in projecting demand for IC beds. The effects of the NL measures did not have an immediate impact on hospitalisation and IC rates. It takes roughly 2 weeks from initial infection to needing IC care and 3 weeks after that before the IC bed is released.  Because of this, the current numbers still include patients which were infected before the measures were implemented. As a result, our estimates of R and corresponding IC demand are still changing daily as the share of patients infected before the NL measures declines.
+
+        To see the impact of different values of R for yourself, you can change the slider next to the graph and see the corresponding effects on IC demand. More interactive results and background on our model can be found on the [background page](/background).
         '''),
-        html.P(["Number of deaths per country. Source: John Hopkins University. lastly retrieved per: ", 
-                str(date.today().strftime("%d/%m/%Y"))+" 00:00 CET"], 
+        html.P(["Number of deaths per country. Source: John Hopkins University. lastly retrieved per: ",
+                str(date.today().strftime("%d/%m/%Y"))+" 00:00 CET"],
                className="m3-footnote"),
-        html.P(["Forecast based on hospitalizations in the Netherlands from RIVM, data used up until: ", 
-                forecaster.hospitals.iloc[-1,0]], 
+        html.P(["Forecast based on hospitalizations in the Netherlands from RIVM, data used up until: ",
+                forecaster.hospitals.iloc[-1,0]],
                className="m3-footnote"),
-        html.P(["Actual IC patients from NICE, data used up until: ", 
-                forecaster.hospitals.iloc[-1,0]], 
+        html.P(["Actual IC patients from NICE, data used up until: ",
+                forecaster.hospitals.iloc[-1,0]],
                className="m3-footnote")],
                      style = dict(marginTop= "20px", width = "900px"))],
 style = dict(marginTop= "120px"))
@@ -151,25 +151,13 @@ html.Div([
     dbc.Container([
         dcc.Markdown('''
             ### A model to forecast the COVID-19 outbreak
-            Modelling the COVID-19 outbreak is a complex endeavour: very little is known about key factors such as the infectious period, incubation time, mortality rate and reproduction rate. Models by any party therefore carry a high amount of uncertainty. This does not mean they should not be made though, as they do provide insight in what direction the outbreak is progressing and are key to supporting decision-makers in their next steps.
-            
+            Modelling the COVID-19 outbreak is a complex endeavour: very little is known about key factors such as the infectious period, incubation time, mortality rate and reproduction rate. Models therefore carry a high amount of uncertainty. This does not mean they should not be made, as they do provide insight in what direction the outbreak is progressing and are key to supporting decision-makers in their next steps.
+
             To keep ourselves up to date on the latest forecast, we have created our own model to forecast the development of the COVID-19 outbreak. It is a so-called compartmental model and more specifically [a SEIR model](https://en.wikipedia.org/wiki/Compartmental_models_in_epidemiology#The_SEIR_model), a common approach to modelling epidemics. You can find a good description of a simple compartmental model  [in this video](https://www.youtube.com/watch?v=Qrp40ck3WpI)
-            If you are curious as to how we implemented the compartmental model and what parameters we used, have a look at the source code and further descriptions on our  [Github.](https://github.com/ErwinM/m3_covid19). Below the most important model assumptions. 
+            If you are curious how we implemented the compartmental model, have a look at the source code [Github.](https://github.com/ErwinM/m3_covid19). The parameters our model uses can be found [here](https://github.com/ErwinM/m3_covid19/blob/master/parameters.py).
             '''),
-        dbc.Container(
-            [dash_table.DataTable(id = 'params',
-                columns=[{"name": i, "id": i} for i in params.columns],
-                data = params.to_dict('records'),
-                style_cell={'textAlign': 'left',
-                            'fontFamily': 'proxima-nova, sans-serif',
-                            'color': '#71706f'},
-                style_table={'maxWidth': '750px',
-                             'marginTop': '30px',
-                             'marginBottom': '30px',
-                             'marginLeft': '30px'},
-                )], className = 'm3-graph'),
         dcc.Markdown('''
-            give you an idea of how the model works, Figure 5 outlines the various outcomes of the model and lets you see the impact of changing some of the key input parameters.
+            To give you an idea of how the model works, Figure 5 outlines the various outcomes of the model and lets you see the impact of changing some of the key input parameters.
             '''),
         dcc.Graph(
                 id = 'sensitivity_figure',
@@ -186,7 +174,8 @@ html.Div([
 
             ],
             value=['Infectious','Patients in hospital', 'Patients on IC'],
-            multi=True),
+            multi=True,
+            className="m3-graph"),
         html.P(["Days to forecast"], style = {"marginTop": "10px"}),
             dcc.Slider(
                 id = 'days_slider',
@@ -200,7 +189,7 @@ html.Div([
                     400: '400',
                     600: '600',
                     800: '800'}),
-        html.P(["Reproduction rate after measures"], 
+        html.P(["Reproduction rate after measures"],
                style = {"marginTop": "10px"}),
         dcc.Slider(
             id = 'R_slider',
@@ -214,7 +203,7 @@ html.Div([
                 2: '2',
                 3: '3',
                 4: '4'}),
-        html.P(["Incubation time (days)"], 
+        html.P(["Incubation time (days)"],
                style = {"marginTop": "10px"}),
         dcc.Slider(
             id = 'Inc_slider',
@@ -228,7 +217,7 @@ html.Div([
                 4: '4',
                 6: '6',
                 8: '8'}),
-        html.P(["Time on IC (days)"], 
+        html.P(["Time on IC (days)"],
                style = {"marginTop": "10px"}),
         dcc.Slider(
             id = 'IC_slider',
@@ -303,55 +292,55 @@ def update_figure1(R):
 
     # create figure
     outlook_fig = go.Figure()
-    outlook_fig.add_trace(go.Scatter(y=y_ic_3d, 
-                                     x= x_outlook, 
-                                     name = "Forecast 2 days ago", 
-                                     line = dict(color='#e0e0e0', width=2), 
+    outlook_fig.add_trace(go.Scatter(y=y_ic_3d,
+                                     x= x_outlook,
+                                     name = "Forecast 2 days ago",
+                                     line = dict(color='#e0e0e0', width=2),
                                      hovertemplate = '%{x}, '+'%{y:.0f}'))
-    outlook_fig.add_trace(go.Scatter(y=y_ic_previous, 
-                                     x= x_outlook, 
-                                     name = "Forecast yesterday", 
-                                     line = dict(color='#bfbfbf', width=2), 
+    outlook_fig.add_trace(go.Scatter(y=y_ic_previous,
+                                     x= x_outlook,
+                                     name = "Forecast yesterday",
+                                     line = dict(color='#bfbfbf', width=2),
                                      hovertemplate = '%{x}, '+'%{y:.0f}'))
-    outlook_fig.add_trace(go.Scatter(y=y_ic_outlook, 
-                                     x= x_outlook, 
-                                     name = "Latest forecast", 
+    outlook_fig.add_trace(go.Scatter(y=y_ic_outlook,
+                                     x= x_outlook,
+                                     name = "Latest forecast",
                                      line = dict(color = '#949494'),
                                      hovertemplate = '%{x}, '+'%{y:.0f}'))
-    outlook_fig.add_trace(go.Scatter(y=y_ic_target, 
-                                     x= x_outlook, 
-                                     name = "Max R", 
-                                     line = dict(color = 'green'), 
+    outlook_fig.add_trace(go.Scatter(y=y_ic_target,
+                                     x= x_outlook,
+                                     name = "R Target",
+                                     line = dict(color = 'green'),
                                      hovertemplate = '%{x}, '+'%{y:.0f}'))
     if forecaster.ic_actuals != 'empty':
             outlook_fig.add_trace(go.Scatter(
-                                    y=forecaster.ic_actuals, 
-                                    x= x_outlook, 
-                                    name = "Actual (COVID) IC patients", 
-                                    line = dict(color='black', width=2), 
-                                    mode = 'markers', 
+                                    y=forecaster.ic_actuals,
+                                    x= x_outlook,
+                                    name = "Actual (COVID) IC patients",
+                                    line = dict(color='black', width=2),
+                                    mode = 'markers',
                                     hovertemplate = '%{x}, '+'%{y:.0f}'))
     outlook_fig.add_trace(go.Scatter(
-                                y=ic_cap, 
-                                x= x_outlook, 
-                                name = "ic capacity", 
-                                line = dict(color='#E21F35', width=2, dash ="dot"), 
-                                showlegend=False, 
+                                y=ic_cap,
+                                x= x_outlook,
+                                name = "ic capacity",
+                                line = dict(color='#E21F35', width=2, dash ="dot"),
+                                showlegend=False,
                                 hovertemplate = '%{x}, '+'%{y:.0f}'))
     outlook_fig.add_trace(go.Scatter(
-                                y=ic_min, 
-                                x= x_outlook, 
-                                name = "short term objective", 
-                                line = dict(color='green', width=2, dash ="dot"), 
-                                showlegend=False, 
+                                y=ic_min,
+                                x= x_outlook,
+                                name = "short term objective",
+                                line = dict(color='green', width=2, dash ="dot"),
+                                showlegend=False,
                                 hovertemplate = '%{x}, '+'%{y:.0f}'))
-    outlook_fig.add_annotation(annotation_layout, 
-                               x=(date.today()-datetime.timedelta(days = 36)), 
-                               y=1870, 
+    outlook_fig.add_annotation(annotation_layout,
+                               x=(date.today()-datetime.timedelta(days = 36)),
+                               y=1870,
                                text="Max IC capacity")
-    outlook_fig.add_annotation(annotation_layout, 
-                               x=(date.today()-datetime.timedelta(days = 36)), 
-                               y=700, 
+    outlook_fig.add_annotation(annotation_layout,
+                               x=(date.today()-datetime.timedelta(days = 36)),
+                               y=700,
                                text="Short term objective")
 
     # format figure
@@ -359,7 +348,7 @@ def update_figure1(R):
         graph_layout,
         plot_bgcolor='white',
         xaxis_title="Days",
-        title = dict(text="Figure 4: Forecast of demand for IC care", 
+        title = dict(text="Figure 4: Forecast of demand for IC care",
                      font=title_font)
             )
     outlook_fig.update_xaxes(showgrid=True, gridwidth=1, gridcolor='LightGrey')
@@ -394,7 +383,7 @@ def update_figure1(measures, R, days, inc, IC):
     solution_outlook["Hosp_tot"] = solution_outlook["I_ic"] +\
                                     solution_outlook["I_hosp"] +\
                                     solution_outlook["I_fatal"]
-    x_outlook = pd.date_range(start='16/2/2020', 
+    x_outlook = pd.date_range(start='16/2/2020',
                               periods=len(solution_outlook))
 
     # create figure
@@ -411,13 +400,13 @@ def update_figure1(measures, R, days, inc, IC):
     outlook_fig.update_layout(
         plot_bgcolor='white',
         xaxis_title="Days",
-        title = """Figure 5: Outcome of forecast model, 
+        title = """Figure 5: Outcome of forecast model,
         number of people for various parameters"""
             )
     outlook_fig.update_xaxes(showgrid=True,
-                             gridwidth=1, 
+                             gridwidth=1,
                              gridcolor='LightGrey')
-    outlook_fig.update_yaxes(showgrid=True, 
+    outlook_fig.update_yaxes(showgrid=True,
                              gridwidth=1,
                              gridcolor='LightGrey')
     return outlook_fig
@@ -433,7 +422,7 @@ def display_page(pathname):
     else:
         return page_1_layout
 
-# serve app 
+# serve app
 is_prod = os.environ.get('IS_HEROKU', None)
 
 if __name__ == '__main__':
