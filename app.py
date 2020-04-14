@@ -13,8 +13,6 @@ import forecast
 from datetime import date
 import dash_table
 
-## data preparation
-
 # get data from JHU
 data = Covid19Processing()
 data.process(rows=20, debug=False)
@@ -134,10 +132,17 @@ html.Div([navbar,
     
         To see the impact of different values of R for yourself, you can change the slider next to the graph above and it will show you the effects on IC demand. More interactive results and background on our model can be found on the [background page](/background).
         '''),
-        html.P(["Number of deaths per country. Source: John Hopkins University. lastly retrieved per: ", str(date.today().strftime("%d/%m/%Y"))+" 00:00 CET"], className="m3-footnote"),
-        html.P(["Forecast based on hospitalizations in the Netherlands from RIVM, data used up until: ", forecaster.hospitals.iloc[-1,0]], className="m3-footnote"),
-        html.P(["Actual IC patients from NICE, data used up until: ", forecaster.hospitals.iloc[-1,0]], className="m3-footnote")],
-        style = dict(marginTop= "20px", width = "900px"))], style = dict(marginTop= "120px"))
+        html.P(["Number of deaths per country. Source: John Hopkins University. lastly retrieved per: ", 
+                str(date.today().strftime("%d/%m/%Y"))+" 00:00 CET"], 
+               className="m3-footnote"),
+        html.P(["Forecast based on hospitalizations in the Netherlands from RIVM, data used up until: ", 
+                forecaster.hospitals.iloc[-1,0]], 
+               className="m3-footnote"),
+        html.P(["Actual IC patients from NICE, data used up until: ", 
+                forecaster.hospitals.iloc[-1,0]], 
+               className="m3-footnote")],
+                     style = dict(marginTop= "20px", width = "900px"))],
+style = dict(marginTop= "120px"))
 
 ## Background page
 page_2_layout = \
@@ -195,7 +200,8 @@ html.Div([
                     400: '400',
                     600: '600',
                     800: '800'}),
-        html.P(["Reproduction rate after measures"], style = {"marginTop": "10px"}),
+        html.P(["Reproduction rate after measures"], 
+               style = {"marginTop": "10px"}),
         dcc.Slider(
             id = 'R_slider',
             min = 0,
@@ -208,7 +214,8 @@ html.Div([
                 2: '2',
                 3: '3',
                 4: '4'}),
-        html.P(["Incubation time (days)"], style = {"marginTop": "10px"}),
+        html.P(["Incubation time (days)"], 
+               style = {"marginTop": "10px"}),
         dcc.Slider(
             id = 'Inc_slider',
             min = 0,
@@ -221,7 +228,8 @@ html.Div([
                 4: '4',
                 6: '6',
                 8: '8'}),
-        html.P(["Time on IC (days)"], style = {"marginTop": "10px"}),
+        html.P(["Time on IC (days)"], 
+               style = {"marginTop": "10px"}),
         dcc.Slider(
             id = 'IC_slider',
             min = 0,
@@ -249,6 +257,9 @@ app.layout = html.Div(
     Output('deaths', 'figure'),
     [Input('country_dropdown', 'value')])
 def update_figure3(options):
+    data = Covid19Processing()
+    data.process(rows=20, debug=False)
+    data.list_countries()
     return data.create_growth_figures("deaths",options)
 
 # callback for adding countries to figure 2
@@ -256,6 +267,9 @@ def update_figure3(options):
     Output('growth', 'figure'),
     [Input('country_dropdown', 'value')])
 def update_figure4(options):
+    data = Covid19Processing()
+    data.process(rows=20, debug=False)
+    data.list_countries()
     return data.create_factor_figure(options)
 
 # interaction for figure 3 with slider
@@ -275,9 +289,10 @@ def update_figure1(R):
     solution_outlook =  forecaster.forecasts["outlook"]
     solution_prev = forecaster.forecasts["previous_forecast"]
     solution_3d = forecaster.forecasts["3d_ago_forecast"]
-    solution_target = forecaster.SEIR_solution(intervention = [(30,factors[0]),(300,R/2.2)])
+    solution_target = forecaster.SEIR_solution(intervention = [(30,factors[0]),
+                                                               (300,R/2.2)])
 
-    # create data sets for figures with outlook IC utilization and target IC utilization
+    # create data sets for figures with outlook IC utilization
     y_ic_outlook = solution_outlook["I_ic"] + solution_outlook["I_fatal"] * 0.5
     y_ic_target = solution_target["I_ic"] + solution_target["I_fatal"] * 0.5
     y_ic_previous = solution_prev["I_ic"] + solution_prev["I_fatal"] * 0.5
@@ -288,23 +303,64 @@ def update_figure1(R):
 
     # create figure
     outlook_fig = go.Figure()
-    outlook_fig.add_trace(go.Scatter(y=y_ic_3d, x= x_outlook, name = "Forecast 2 days ago", line = dict(color='#e0e0e0', width=2), hovertemplate = '%{x}, '+'%{y:.0f}'))
-    outlook_fig.add_trace(go.Scatter(y=y_ic_previous, x= x_outlook, name = "Forecast yesterday", line = dict(color='#bfbfbf', width=2), hovertemplate = '%{x}, '+'%{y:.0f}'))
-    outlook_fig.add_trace(go.Scatter(y=y_ic_outlook, x= x_outlook, name = "Latest forecast", line = dict(color = '#949494'),hovertemplate = '%{x}, '+'%{y:.0f}'))
-    outlook_fig.add_trace(go.Scatter(y=y_ic_target, x= x_outlook, name = "Max R", line = dict(color = 'green'), hovertemplate = '%{x}, '+'%{y:.0f}'))
+    outlook_fig.add_trace(go.Scatter(y=y_ic_3d, 
+                                     x= x_outlook, 
+                                     name = "Forecast 2 days ago", 
+                                     line = dict(color='#e0e0e0', width=2), 
+                                     hovertemplate = '%{x}, '+'%{y:.0f}'))
+    outlook_fig.add_trace(go.Scatter(y=y_ic_previous, 
+                                     x= x_outlook, 
+                                     name = "Forecast yesterday", 
+                                     line = dict(color='#bfbfbf', width=2), 
+                                     hovertemplate = '%{x}, '+'%{y:.0f}'))
+    outlook_fig.add_trace(go.Scatter(y=y_ic_outlook, 
+                                     x= x_outlook, 
+                                     name = "Latest forecast", 
+                                     line = dict(color = '#949494'),
+                                     hovertemplate = '%{x}, '+'%{y:.0f}'))
+    outlook_fig.add_trace(go.Scatter(y=y_ic_target, 
+                                     x= x_outlook, 
+                                     name = "Max R", 
+                                     line = dict(color = 'green'), 
+                                     hovertemplate = '%{x}, '+'%{y:.0f}'))
     if forecaster.ic_actuals != 'empty':
-            outlook_fig.add_trace(go.Scatter(y=forecaster.ic_actuals, x= x_outlook, name = "Actual (COVID) IC patients", line = dict(color='black', width=2), mode = 'markers', hovertemplate = '%{x}, '+'%{y:.0f}'))
-    outlook_fig.add_trace(go.Scatter(y=ic_cap, x= x_outlook, name = "ic capacity", line = dict(color='#E21F35', width=2, dash ="dot"), showlegend=False, hovertemplate = '%{x}, '+'%{y:.0f}'))
-    outlook_fig.add_trace(go.Scatter(y=ic_min, x= x_outlook, name = "short term objective", line = dict(color='green', width=2, dash ="dot"), showlegend=False, hovertemplate = '%{x}, '+'%{y:.0f}'))
-    outlook_fig.add_annotation(annotation_layout, x=(date.today()-datetime.timedelta(days = 36)), y=1870, text="Max IC capacity")
-    outlook_fig.add_annotation(annotation_layout, x=(date.today()-datetime.timedelta(days = 36)), y=700, text="Short term objective")
+            outlook_fig.add_trace(go.Scatter(
+                                    y=forecaster.ic_actuals, 
+                                    x= x_outlook, 
+                                    name = "Actual (COVID) IC patients", 
+                                    line = dict(color='black', width=2), 
+                                    mode = 'markers', 
+                                    hovertemplate = '%{x}, '+'%{y:.0f}'))
+    outlook_fig.add_trace(go.Scatter(
+                                y=ic_cap, 
+                                x= x_outlook, 
+                                name = "ic capacity", 
+                                line = dict(color='#E21F35', width=2, dash ="dot"), 
+                                showlegend=False, 
+                                hovertemplate = '%{x}, '+'%{y:.0f}'))
+    outlook_fig.add_trace(go.Scatter(
+                                y=ic_min, 
+                                x= x_outlook, 
+                                name = "short term objective", 
+                                line = dict(color='green', width=2, dash ="dot"), 
+                                showlegend=False, 
+                                hovertemplate = '%{x}, '+'%{y:.0f}'))
+    outlook_fig.add_annotation(annotation_layout, 
+                               x=(date.today()-datetime.timedelta(days = 36)), 
+                               y=1870, 
+                               text="Max IC capacity")
+    outlook_fig.add_annotation(annotation_layout, 
+                               x=(date.today()-datetime.timedelta(days = 36)), 
+                               y=700, 
+                               text="Short term objective")
 
     # format figure
     outlook_fig.update_layout(
         graph_layout,
         plot_bgcolor='white',
         xaxis_title="Days",
-        title = dict(text="Figure 4: Forecast of demand for IC care", font=title_font)
+        title = dict(text="Figure 4: Forecast of demand for IC care", 
+                     font=title_font)
             )
     outlook_fig.update_xaxes(showgrid=True, gridwidth=1, gridcolor='LightGrey')
     outlook_fig.update_yaxes(showgrid=True, gridwidth=1, gridcolor='LightGrey')
@@ -322,34 +378,53 @@ def update_figure1(R):
 def update_figure1(measures, R, days, inc, IC):
     #TO DO: integrate most of this into forecaster class
     # get fitted model
-    solution_outlook =  forecaster.SEIR_solution(intervention = [(30,factors[0]),(len(forecaster.hospitals),R/2.2), (10000,R/2.2)],
-                                                 days = days, t_inc = inc, t_ic = IC)
-    solution_outlook["IC_total"] = solution_outlook["I_ic"] + solution_outlook["I_fatal"] * 0.5
-    solution_outlook["R_total"] = solution_outlook["R_mild"] + solution_outlook["R_hosp"]  + solution_outlook["R_ic"]
-    solution_outlook["Hosp_tot"] = solution_outlook["I_ic"] + solution_outlook["I_hosp"] + solution_outlook["I_fatal"]
-    x_outlook = pd.date_range(start='16/2/2020', periods=len(solution_outlook))
+    solution_outlook =\
+        forecaster.SEIR_solution(intervention = \
+                                    [(30,factors[0]),
+                                     (len(forecaster.hospitals),
+                                      R/2.2), (10000,R/2.2)],
+                                days = days,
+                                t_inc = inc,
+                                t_ic = IC)
+    solution_outlook["IC_total"] = solution_outlook["I_ic"] + \
+                                    solution_outlook["I_fatal"] * 0.5
+    solution_outlook["R_total"] = solution_outlook["R_mild"] +\
+                                    solution_outlook["R_hosp"]  +\
+                                    solution_outlook["R_ic"]
+    solution_outlook["Hosp_tot"] = solution_outlook["I_ic"] +\
+                                    solution_outlook["I_hosp"] +\
+                                    solution_outlook["I_fatal"]
+    x_outlook = pd.date_range(start='16/2/2020', 
+                              periods=len(solution_outlook))
 
     # create figure
     outlook_fig = go.Figure()
 
     for measure in measures:
-        outlook_fig.add_trace(go.Scatter(y=solution_outlook[mapping[measure]],
-                                         x= x_outlook,
-                                         name = measure,
-                                         hovertemplate = '%{y:.0f}'))
+        outlook_fig.add_trace(
+            go.Scatter(y=solution_outlook[mapping[measure]],
+                       x= x_outlook,
+                       name = measure,
+                       hovertemplate = '%{y:.0f}'))
 
     # format figure
     outlook_fig.update_layout(
         plot_bgcolor='white',
         xaxis_title="Days",
-        title = "Figure 5: Outcome of forecast model, number of people for various parameters"
+        title = """Figure 5: Outcome of forecast model, 
+        number of people for various parameters"""
             )
-    outlook_fig.update_xaxes(showgrid=True, gridwidth=1, gridcolor='LightGrey')
-    outlook_fig.update_yaxes(showgrid=True, gridwidth=1, gridcolor='LightGrey')
+    outlook_fig.update_xaxes(showgrid=True,
+                             gridwidth=1, 
+                             gridcolor='LightGrey')
+    outlook_fig.update_yaxes(showgrid=True, 
+                             gridwidth=1,
+                             gridcolor='LightGrey')
     return outlook_fig
 
 # callback for switching page
-@app.callback(Output('page-content', 'children'), [Input('url', 'pathname')])
+@app.callback(Output('page-content', 'children'),
+              [Input('url', 'pathname')])
 def display_page(pathname):
     if pathname == '/dashboard':
         return page_1_layout
@@ -365,4 +440,4 @@ if __name__ == '__main__':
     if is_prod:
         app.run_server(debug=False)
     else:
-        app.run_server(debug=True)
+        app.run_server(debug=False)
