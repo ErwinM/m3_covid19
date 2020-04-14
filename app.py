@@ -67,9 +67,9 @@ html.Div([navbar,
                 ## Fighting COVID19 in NL: how are we doing?
                 Like most, we follow the news on COVID19 daily. We are bombarded with numbers on deaths, hospitalisations and availability of IC beds. However, to us, this torrent of daily numbers lack context. Without this context it is hard to make sense of it all. We built a live dashboard that tries to answer the two main questions:
 
-                1 Are we slowing down the spread?
+                1. Are we slowing down the spread?
 
-                2 Will we have enough IC beds?
+                2. Will we have enough IC beds?
 
                 Of course, the weekly RIVM briefing answer these same questions. Our dashboard tries to answers them every day based on the latest data available. **Our dashboard is updated every day at midnight**.
                 ''')],
