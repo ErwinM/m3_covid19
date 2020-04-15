@@ -32,7 +32,7 @@ class forecast_covid19:
                                    ,timeout = 3)
             rawData = pd.read_csv(StringIO(r.text))
             base = [0] * 11
-            self.ic_actuals = base + rawData["intakeCount"][1:-5].tolist()
+            self.ic_actuals = base + rawData["intakeCount"][1:-3].tolist()
         except:
             self.ic_actuals = "empty"
 
