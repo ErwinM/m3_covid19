@@ -132,7 +132,7 @@ html.Div([navbar,
 
         To simulate the impact of different values of R for yourself, you can change the slider next to Figure 3 and see the corresponding effects on IC demand in Figure 4. More interactive results and background on our model can be found on the [background page](/background). 
 
-        If you have any questions or comments, we would love to here them. Send us an email at [Gijs](mailto:gijs@m3consultancy.nl) or [Erwin](mailto:erwin@m3consultancy.nl).
+        If you have any questions or comments, we would love to here them. Send an email to [Gijs](mailto:gijs@m3consultancy.nl) or [Erwin](mailto:erwin@m3consultancy.nl).
         '''),
         html.P(["Number of deaths per country. Source: John Hopkins University. lastly retrieved per: ",
                 str(date.today().strftime("%d/%m/%Y"))+" 00:00 CET"],
