@@ -65,7 +65,7 @@ html.Div([navbar,
         dbc.Jumbotron([
             dcc.Markdown('''
                 ## Fighting COVID19 in NL: how are we doing?
-                Like most, we follow the news on COVID19 daily. We are bombarded with numbers on deaths, hospitalisations and availability of IC beds. However, to us, this torrent of daily numbers lack context. Without this context it is hard to make sense of it all. We built a live dashboard that tries to answer the two main questions:
+                Like most, we follow the news on COVID19 daily. We are bombarded with numbers on deaths, hospitalisations and availability of IC beds. However, to us, this torrent of daily numbers lacks context. Without this context it is hard to make sense of it all. We built a live dashboard that tries to answer the two main questions:
 
                 1. Are we slowing down the spread?
 
