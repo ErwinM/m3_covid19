@@ -65,7 +65,7 @@ html.Div([navbar,
         dbc.Jumbotron([
             dcc.Markdown('''
                 ## Fighting COVID19 in NL: how are we doing?
-                Like most, we follow the news on COVID19 daily. We are bombarded with numbers on deaths, hospitalisations and availability of IC beds. However, to us, this torrent of daily numbers lacks context. Without this context it is hard to make sense of it all. We built a live dashboard that tries to answer the two main questions:
+                Like most, we follow the news on COVID19 daily. We are bombarded with numbers on deaths, hospitalisations and availability of IC beds. However, to us, this torrent of daily numbers lacks context. Without context it is hard to make sense of it all. We built a live dashboard that tries to answer two questions:
 
                 1. Are we slowing down the spread?
 
@@ -87,19 +87,19 @@ html.Div([navbar,
                          "Belgium", "United Kingdom"],
                 multi=True)],className = "m3-graph"),
         dcc.Markdown('''
-           Figure 1 is a widely used and useful graph: it shows the growth trajectory of the number of deaths in selected European countries. The y-axis is logaritmic: every major step corresponds to a 10-fold increase. We have selected several other European countries we think are relevant to compare with The Netherlands.
+           Figure 1 is a widely used and useful graph: it shows the growth trajectory of the number of deaths in selected European countries. The y-axis is logaritmic: every major step corresponds to a 10-fold increase. We have selected several other European countries to compare with The Netherlands.
 
-           The graph shows that the rise in death toll is slowing down in most European countries. The curves are bending away from exponential growth. However, this graph lacks the detail required for us to place daily numbers into context. Figure 2 zooms in on the underlying growth rates.
+           The graph shows that the rise in death toll is slowing down in most European countries. The curves are bending away from exponential growth. However, this graph lacks the detail required to place the daily numbers into context. Figure 2 drills into the underlying growth rates.
            '''),
         dbc.Container(children=[dcc.Graph(id = 'growth', )], className="m3-graph"),
         dcc.Markdown('''
-           Figure 2 takes the average number of newly reported deaths of the past seven days and compares it to the average calculated the day before.  For a country to successfully contain the spread of COVID19, this number needs to drop below 0.
+           Figure 2 takes the average number of newly reported deaths of the past seven days and compares it to the average calculated the day before.  For a country to successfully contain the spread of COVID19, this line needs to drop below 0.
            '''),
         dcc.Markdown('''
            ### Question 2: Will we have enough IC beds?
            This is not an easy question to answer, as it involves the future. To answer it, we need to forecast both the demand and the availability of IC care in The Netherlands. For availability we use the latest available information: 2.400 beds, of which 1.900 will be available to patients suffering from COVID19.
 
-           To forecast demand, we have created our own, simplified, forecasting model based on the [SEIR model](https://en.wikipedia.org/wiki/Compartmental_models_in_epidemiology#The_SEIR_model).  A key variable in this model is the reproduction rate (R): the number of people a person infected with COVID-19 infects.  The bulk of the measures taken in The Netherlands are aimed at lowering R. A lower R means less people get infected at the same time, which means less people need IC care simultaneously, thus flattening the curve.
+           To forecast demand, we have created our own, simplified, forecasting model based on the [SEIR model](https://en.wikipedia.org/wiki/Compartmental_models_in_epidemiology#The_SEIR_model).  A key variable in this model is the reproduction rate (R): the number of people a person infected with COVID-19 infects. The bulk of the measures taken in The Netherlands are aimed at lowering R. A lower R means less people get infected at the same time, which means less people need IC care simultaneously, thus flattening the curve.
 
            To gauge the effectiveness of measures taken so far and to project their result on IC demand we follow the approach described below.
            Based on the available data, our model estimates R for two periods:
@@ -124,13 +124,15 @@ html.Div([navbar,
                                   3: '3',
                                   4: '4'})], style = {"marginTop": "100px"}), md = 2)], className="m3-graph"),
         dcc.Markdown('''
-        Figure 3 shows our model’s estimate of the reproduction rate during these periods. Figure 4 shows our model’s projection for the corresponding IC demand. Both graphs show our estimate for today and our estimates from the last two days. The latest forecast is based on hospitalizations up until 5 days ago, as it takes a while for hospitals to report every patient.
+        Figure 3 shows our model’s estimate of the reproduction rate during both periods. Figure 4 shows our model’s projection for the corresponding IC demand. Both graphs show our estimate for today and our estimates from the last two days. The latest forecast is based on hospitalizations up until 5 days ago, as it takes a while for hospitals to report.
         '''),
         dcc.Graph(id = 'outlook_figure', className="m3-graph"),
         dcc.Markdown('''
-        Time lag plays an important role in projecting demand for IC beds. The effects of the NL measures did not have an immediate impact on hospitalisation and IC rates. It takes roughly 2 weeks from initial infection to needing IC care and 3 weeks after that before the IC bed is released.  Because of this, the current numbers still include patients which were infected before the measures were implemented. As a result, our estimates of R and corresponding IC demand are still changing daily as the share of patients infected before the NL measures declines.
+        Time-lag plays an important role in projecting demand for IC beds. The effects of the NL measures did not have an immediate impact on hospitalisation and IC rates. It takes roughly 2 weeks from initial infection to needing IC care and 3 weeks after that before the IC bed is released.  Because of this, current numbers still include patients which were infected before measures were implemented. As a result, our estimates of R and corresponding IC demand still change daily as the share of patients infected before the NL measures declines.
 
-        To see the impact of different values of R for yourself, you can change the slider next to the graph and see the corresponding effects on IC demand. More interactive results and background on our model can be found on the [background page](/background).
+        To simulate the impact of different values of R for yourself, you can change the slider next to Figure 3 and see the corresponding effects on IC demand in Figure 4. More interactive results and background on our model can be found on the [background page](/background). 
+
+        If you have any questions or comments, we would love to here them. Send us an email at [Gijs](mailto:gijs@m3consultancy.nl) or [Erwin](mailto:erwin@m3consultancy.nl).
         '''),
         html.P(["Number of deaths per country. Source: John Hopkins University. lastly retrieved per: ",
                 str(date.today().strftime("%d/%m/%Y"))+" 00:00 CET"],
