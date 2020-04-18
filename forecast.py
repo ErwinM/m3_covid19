@@ -26,16 +26,17 @@ class forecast_covid19:
         self.MAX_RANGE = 100000
 
     def get_NICE_data(self):
-        try:
-            import requests
-            r = requests.get('https://raw.githubusercontent.com/J535D165/CoronaWatchNL/master/data/nice_ic_by_day.csv'
-                                   ,timeout = 3)
-            rawData = pd.read_csv(StringIO(r.text))
-            base = [0] * 11
-            self.ic_actuals = base + rawData["intakeCount"][1:-3].tolist()
-        except:
-            self.ic_actuals = "empty"
-
+        # CORONAWATCHNL currently offline, temporary fix with manual input
+           self.ic_actuals = pd.read_csv("ic.csv", sep = ";")["Opnamen"]
+           # try:
+               # import requests 
+               # r = requests.get('https://raw.githubusercontent.com/J535D165/CoronaWatchNL/master/data/nice_ic_by_day.csv'                                   ,timeout = 3)
+               # rawData = pd.read_csv(StringIO(r.text))
+               # base = [0] * 11
+               # self.ic_actuals = base + rawData["intakeCount"][1:-3].tolist()
+           # except:
+               # self.ic_actuals = "empty"
+        
     def SEIR_solution(self, intervention = [(100,1), (100000, 0.2)],e0 = 20,
                       days = 100, t_inc = 999, t_inf = 999, t_ic = 999):
 

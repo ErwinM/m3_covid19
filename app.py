@@ -314,8 +314,7 @@ def update_figure1(R):
                                      name = "R Target",
                                      line = dict(color = 'green'),
                                      hovertemplate = '%{x}, '+'%{y:.0f}'))
-    if forecaster.ic_actuals != 'empty':
-            outlook_fig.add_trace(go.Scatter(
+    outlook_fig.add_trace(go.Scatter(
                                     y=forecaster.ic_actuals,
                                     x= x_outlook,
                                     name = "Actual (COVID) IC patients",

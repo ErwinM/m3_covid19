@@ -18,7 +18,7 @@ class Const():
     t_hosp = 7
 
     # time spend in ic
-    t_ic = 21
+    t_ic = 23
     
     # time before patient dies of COVID19
     t_fatal = 21
