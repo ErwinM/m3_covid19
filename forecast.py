@@ -185,8 +185,8 @@ class forecast_covid19:
     def create_bar(self, Rtarget = 2):
         # create bar chart for question 2
         y1 = [self.factors["outlook"][0]*2.2]
-        barnames = ["Before measures", "2 days ago",
-                    "yesterday", "latest", "R target"]
+        barnames = ["Before measures", "2 weeks ago",
+                    "last week", "latest", "R target"]
         barcolors = ['#E21F35', '#e0e0e0', '#bfbfbf', '#949494', 'green']
         for bar in ["3d_ago_forecast", "previous_forecast", "outlook"]:
             y1.append(self.factors[bar][1]*2.2)

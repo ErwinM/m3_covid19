@@ -23,8 +23,8 @@ params = pd.read_csv("params.csv", sep = ";")
 forecaster = forecast.forecast_covid19()
 forecaster.get_NICE_data()
 forecaster.fit_REIS(cutoff= 30, name = "outlook")
-forecaster.fit_REIS(cutoff= 30, name = "previous_forecast", days_back = 1)
-forecaster.fit_REIS(cutoff= 30, name = "3d_ago_forecast", days_back = 2)
+forecaster.fit_REIS(cutoff= 30, name = "previous_forecast", days_back = 7)
+forecaster.fit_REIS(cutoff= 30, name = "3d_ago_forecast", days_back = 14)
 
 # get betas from fitted model
 factors = forecaster.factors["outlook"]
@@ -124,7 +124,7 @@ html.Div([navbar,
                                   3: '3',
                                   4: '4'})], style = {"marginTop": "100px"}), md = 2)], className="m3-graph"),
         dcc.Markdown('''
-        Figure 3 shows our model’s estimate of the reproduction rate during both periods. Figure 4 shows our model’s projection for the corresponding IC demand. Both graphs show our estimate for today and our estimates from the last two days. The latest forecast is based on hospitalizations up until 5 days ago, as it takes a while for hospitals to report.
+        Figure 3 shows our model’s estimate of the reproduction rate during both periods. Figure 4 shows our model’s projection for the corresponding IC demand. Both graphs show our estimate for today and our estimates from the last two weeks. The latest forecast is based on hospitalizations up until 5 days ago, as it takes a while for hospitals to report.
         '''),
         dcc.Graph(id = 'outlook_figure', className="m3-graph"),
         dcc.Markdown('''
@@ -296,12 +296,12 @@ def update_figure1(R):
     outlook_fig = go.Figure()
     outlook_fig.add_trace(go.Scatter(y=y_ic_3d,
                                      x= x_outlook,
-                                     name = "Forecast 2 days ago",
+                                     name = "Forecast 2 weeks ago",
                                      line = dict(color='#e0e0e0', width=2),
                                      hovertemplate = '%{x}, '+'%{y:.0f}'))
     outlook_fig.add_trace(go.Scatter(y=y_ic_previous,
                                      x= x_outlook,
-                                     name = "Forecast yesterday",
+                                     name = "Forecast last week",
                                      line = dict(color='#bfbfbf', width=2),
                                      hovertemplate = '%{x}, '+'%{y:.0f}'))
     outlook_fig.add_trace(go.Scatter(y=y_ic_outlook,
@@ -336,11 +336,11 @@ def update_figure1(R):
                                 showlegend=False,
                                 hovertemplate = '%{x}, '+'%{y:.0f}'))
     outlook_fig.add_annotation(annotation_layout,
-                               x=(date.today()-datetime.timedelta(days = 36)),
+                               x=(date.today()-datetime.timedelta(days = 50)),
                                y=1870,
                                text="Max IC capacity")
     outlook_fig.add_annotation(annotation_layout,
-                               x=(date.today()-datetime.timedelta(days = 36)),
+                               x=(date.today()-datetime.timedelta(days = 50)),
                                y=700,
                                text="Short term objective")
 
