@@ -38,7 +38,7 @@ class forecast_covid19:
                # self.ic_actuals = "empty"
         
     def SEIR_solution(self, intervention = [(100,1), (100000, 0.2)],e0 = 20,
-                      days = 100, t_inc = 999, t_inf = 999, t_ic = 999):
+                      days = 150, t_inc = 999, t_inf = 999, t_ic = 999):
 
         # All parameters are imported from parameters.py
         #
@@ -143,7 +143,7 @@ class forecast_covid19:
 
         #parameters
         factor_lbound = 0.000001 #lower bound for factor on R
-        factor_ubound = 3 #upper bound for factor on R
+        factor_ubound = 3.95/2.2 #upper bound for factor on R
 
         # use root mean squared error as loss function
         def rmse(factors):
