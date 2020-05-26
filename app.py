@@ -340,9 +340,9 @@ def update_figure1(R):
                                y=1870,
                                text="Max IC capacity")
     outlook_fig.add_annotation(annotation_layout,
-                               x=(date.today()-datetime.timedelta(days = 50)),
+                               x=(date.today()+datetime.timedelta(days = 10)),
                                y=700,
-                               text="Short term objective")
+                               text="Normalized IC occupation")
 
     # format figure
     outlook_fig.update_layout(

@@ -199,7 +199,7 @@ class Covid19Processing:
                                  line = dict(color='Grey', width=2, dash='dot'), showlegend=False))     
         fig.add_annotation(annotation_layout, x=14, y=4.21, text="doubles per day")
         fig.add_annotation(annotation_layout, x=29, y=4.36, text="doubles per 2 days")
-        fig.add_annotation(annotation_layout, x=42, y=3.16, text="doubles per 4 days")
+        fig.add_annotation(annotation_layout, x=55, y=3.16, text="doubles per 4 days")
 
         fig.update_traces(mode='lines')
 
@@ -232,8 +232,8 @@ class Covid19Processing:
                     fig.add_trace(go.Scatter(y=y_country, name = country))
             except:
                 continue
-        fig.add_trace(go.Scatter(y=np.ones(50)*0, showlegend = False, line = dict(width = 2, color="LightGrey", dash = 'dot')))
-        fig.add_annotation(annotation_layout, x=45, y=0, text="0% growth")
+        fig.add_trace(go.Scatter(y=np.ones(100)*0, showlegend = False, line = dict(width = 2, color="LightGrey", dash = 'dot')))
+        fig.add_annotation(annotation_layout, x=10, y=0, text="0% growth")
         fig.update_layout(
             graph_layout,
             plot_bgcolor='white',
